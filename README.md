@@ -1,5 +1,7 @@
 # phaseLD
 
+ALEXANDRE MARAND & HAINAN ZHAO, 2017
+
 A simple LD based method to quickly phase pseudo-oneway test cross populations. Users should use a two step approach, first identifying the most probable haplotypes, via Bayesian methods (within phase_F1_LD.pl), followed by HMM refinement of called haplotypes with HMM_snp.pl. 
 
 Please cite "" if you use this software.  
