@@ -17,4 +17,4 @@ Options:
             quarter of the window size [Int|Default=5]
 
     --help  Print a brief help message and exit
-    ```
+```
