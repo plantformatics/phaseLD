@@ -4,7 +4,7 @@ A simple LD based method to quickly phase pseudo-oneway test cross populations. 
 
 Please cite "" if you use this software.  
 
-## phaseLD
+## Usage
 ```
 Usage:
     phase_F1_LD.pl --in [OPTIONS]
