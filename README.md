@@ -1,8 +1,8 @@
 # phaseLD
 
 ## phaseLD
-
-`Usage:
+```
+Usage:
     phase_F1_LD.pl --in [OPTIONS]
 
 Options:
@@ -17,4 +17,4 @@ Options:
             quarter of the window size [Int|Default=5]
 
     --help  Print a brief help message and exit
-    `
+    ```
