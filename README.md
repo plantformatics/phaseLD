@@ -15,6 +15,7 @@ phaseLD.pl and HMM_snp.pl require users to have the following perl modules avail
 4) List::Util
 5) Parallel::ForkManager
 
+All modules are available from CPAN, and can be accessed with cpan/cpanm ()
 ## Usage
 ```
 Usage:
