@@ -5,6 +5,7 @@ use Sort::Naturally;
 use Getopt::Long;
 use Pod::Usage;
 use List::Util qw(sum);
+use Parallel::ForkManager;
 
 ######################################################
 ##                   Arguments                      ##
@@ -17,6 +18,7 @@ my $win = 20;
 my $step = 1;
 my $bwin = 50;
 my $bstep = 5;
+my $threads = 1;
 
 GetOptions(
         'in=s'          => \$gen,
@@ -25,6 +27,7 @@ GetOptions(
         'step:i'        => \$step,
 	'bwin:i'	=> \$bwin,
 	'bstep:i'	=> \$bstep,
+	'threads:i'	=> \$threads,
         'help!'         => \$help
 ) or pod2usage(-verbose => 1) && exit;
 
@@ -33,6 +36,34 @@ pod2usage(-verbose => 1) && exit if defined $help;
 if(!$gen){
         pod2usage(-verbose => 1) && exit;
 }
+
+####################################################
+##           Multithreading Parameters            ##
+####################################################
+
+my %bayesian_calls;
+my $pm = Parallel::ForkManager->new($threads);
+## allow child process to return data structure (HASH reference) upon completion.
+$pm->run_on_finish( sub{
+        my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
+        if($data_structure_reference){
+                my $ref_type = ref($data_structure_reference);
+                my %ref_hash = %$data_structure_reference;
+                my @keys = nsort keys %ref_hash;
+                for (my $ii = 0; $ii < @keys; $ii++){
+                        my @individual = nsort keys $ref_hash{$keys[$ii]};
+                        for (my $xx = 0; $xx < @individual; $xx++){
+                                my @haps = nsort keys $ref_hash{$keys[$ii]}{$individual[$xx]};
+                                for (my $tt = 0; $tt < @haps; $tt++){
+                                        $bayesian_calls{$keys[$ii]}{$individual[$xx]}{$haps[$tt]} = $ref_hash{$keys[$ii]}{$individual[$xx]}{$haps[$tt]};
+                                }
+                        }
+               }
+        }
+        else{
+                print STDERR "$pid did not send anything back\n";
+        }
+});
 
 ####################################################
 ##		  Phase Gentoypes 		  ##
@@ -91,7 +122,10 @@ for (my $i = 0; $i < @file; $i+=$step){
 	}
 }
 close $log;
-## analyze LD information for phasing
+
+######################################## 
+## analyze LD information for phasing ##
+########################################
 
 my %phased;
 my %probs;
@@ -197,7 +231,10 @@ for (my $j = 0; $j < @keys; $j++){
 	}
 }
 
-## create new hash with haplotype assignments
+################################################
+## create new hash with haplotype assignments ##
+################################################
+
 my %calls;
 my %ave_prob;
 my @sites = nsort keys %probs;
@@ -272,10 +309,14 @@ for (my $t = 0; $t < @file; $t++){
 	}
 }
 
-## call window phases based on bayesian probabilities
+########################################################
+## call window phases based on bayesian probabilities ##
+########################################################
+
 print STDERR "Begin Bayes window based haplotype calling...\n";
 my @snps = nsort keys %calls;
 for (my $i = 0; $i < @snps; $i++){
+	my $pid = $pm->start and next;
 	my $end;
 	if($i + $win > @snps){
 		$end = @snps;
@@ -293,17 +334,25 @@ for (my $i = 0; $i < @snps; $i++){
 		}
 	}
 	my $bayes_calls = bayes(\%temp,\%temp_probs);
-	my %bcalls = %$bayes_calls;
-	my @keys = nsort keys %bcalls;
-	for (my $t = 0; $t < @keys; $t++){
-		print $output "$keys[$t]";
-		my @inds = nsort keys $bcalls{$keys[$t]};
-		for (my $z = 0; $z < @inds; $z++){
-			print $output "\t0=$bcalls{$keys[$t]}{$inds[$z]}{0}:1=$bcalls{$keys[$t]}{$inds[$z]}{1}";
-		}
-		print $output "\n";
-	}
+	my %sub = %$bayes_calls;
+	$pm->finish(0, \%sub);
 }
+$pm->wait_all_children;
+
+my @w_calls = nsort keys %bayesian_calls;
+for (my $z = 0; $z < @w_calls; $z++){
+	print $output "$w_calls[$z]";
+	my @inds = nsort keys $bayesian_calls{$w_calls[$z]};
+	for (my $i = 0; $i < @inds; $i++){
+		print $output "\t";
+		my @hap = sort {$bayesian_calls{$w_calls[$z]}{$inds[$i]}{$b} <=> $bayesian_calls{$w_calls[$z]}{$inds[$i]}{$a}} keys $bayesian_calls{$w_calls[$z]}{$inds[$i]};
+		for (my $j = 0; $j < @hap; $j++){
+			print $output "$hap[$j]=$bayesian_calls{$w_calls[$z]}{$inds[$i]}{$hap[$j]}:";
+		}
+	}
+	print $output "\n";
+}
+
 
 close $output;
 ####################################################
@@ -451,5 +500,9 @@ Set minimum window size for bayes haplotype calling [Int|Default=50]
 =item B<--bstep>
 
 Set minimum step size for bayes haplotype calling [Int|Default=5]
+
+=item B<--threads>
+
+Set number of threads [Int|Default=1]
 
 =back

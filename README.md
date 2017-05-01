@@ -43,4 +43,7 @@ Options:
 
     --bstep Set minimum step size for bayes haplotype calling
             [Int|Default=5]
+
+    --threads
+            Set number of threads [Int|Default=1]
 ```
