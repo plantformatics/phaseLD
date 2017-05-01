@@ -15,9 +15,11 @@ phaseLD.pl and HMM_snp.pl require users to have the following perl modules avail
 4) [List::Util](http://search.cpan.org/~pevans/Scalar-List-Utils-1.47/lib/List/Util.pm)
 5) [Parallel::ForkManager](search.cpan.org/~yanick/Parallel-ForkM…)
 
-All modules are available from CPAN, and can be accessed with cpan/cpanm 
-Click [here] for link to cpanm
-[here]:http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
+All modules are available from CPAN, and can be accessed with cpan/cpanm.
+
+Click [here] for link to cpanm.
+
+[here]: http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
 
 ## Usage
 ```
