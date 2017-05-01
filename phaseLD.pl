@@ -4,6 +4,7 @@ use warnings;
 use Sort::Naturally;
 use Getopt::Long;
 use Pod::Usage;
+use List::Util qw(sum);
 
 ######################################################
 ##                   Arguments                      ##
@@ -13,7 +14,7 @@ my $gen;
 my $out = 'phased.out';
 my $help;
 my $win = 20;
-my $step = $win / 4;
+my $step = 1;
 
 GetOptions(
         'in=s'          => \$gen,
@@ -38,6 +39,9 @@ my @file = <F>;
 close F;
 open (my $output, '>', $out), or die;
 
+my $logs = 'log.txt';
+open (my $log, '>', $logs), or die;
+
 my %hash;
 for (my $i = 0; $i < @file - $win; $i+=$step){
 	my $extend = 0;
@@ -54,51 +58,155 @@ for (my $i = 0; $i < @file - $win; $i+=$step){
 			next;
 		}
 		else{
-			$extend++;
 			my $r2 = $results[1];
 			if($r2 == 0){
 				next;
 			}
 			else{
+				$extend++;
 				my %haps = %$linkage;
 				my @keys = sort {$haps{$b} <=> $haps{$a}} keys %haps;
 				my $att = join(":",$id1,$id2,$r2);
+				print $log "$id1\t$id2\t$r2";
 				for (my $t = 0; $t < @keys; $t++){
 					$hash{$att}{$keys[$t]} = $haps{$keys[$t]};
+					print $log "\t$keys[$t]=$haps{$keys[$t]}";
 				}
+				print $log "\n";
 			}
 		}
 	}
-	if($extend == 0){
+	if($extend < $win/2){
 		$win = $win + $step;
+		redo;
 	}
 	else{
 		$win = $win;
 	}
 }
+close $log;
 ## analyze LD information for phasing
 
 my %phased;
 my %probs;
 my @keys = nsort keys %hash;
+my $check = 0;
 for (my $j = 0; $j < @keys; $j++){
 	my @coords = split(":",$keys[$j]);
 	my @haps = sort {$hash{$keys[$j]}{$b} <=> $hash{$keys[$j]}{$a}} keys $hash{$keys[$j]};
-	if($j == 0){
-			
+	my $coup = 0;
+	my $rep = 0;
+	foreach(@haps){
+		if($_ eq 'AA' || $_ eq 'aa'){
+			$coup = $coup + $hash{$keys[$j]}{$_};
+		}
+		elsif($_ eq 'Aa' || $_ eq 'aA'){
+			$rep = $rep + $hash{$keys[$j]}{$_};
+		}
+	}
+	my $total = $coup + $rep;
+	my $c_freq = $coup / $total;
+	my $r_freq = $rep / $total;
+	if($c_freq < 0.6 && $r_freq < 0.6){
+		next;
 	}
 	else{
-
+		$check++;
+		if($check == 1){
+			if($c_freq > $r_freq){
+				$phased{$coords[0]}{0} = 'A';
+				$phased{$coords[0]}{1} = 'a';
+				$phased{$coords[1]}{0} = 'A';
+				$phased{$coords[1]}{1} = 'a';
+				push(@{$probs{$coords[0]}},$c_freq); 
+				push(@{$probs{$coords[1]}},$c_freq);
+			}
+			else{
+				$phased{$coords[0]}{0} = 'A';
+				$phased{$coords[0]}{1} = 'a';
+				$phased{$coords[1]}{0} = 'a';
+				$phased{$coords[1]}{1} = 'A';
+				push(@{$probs{$coords[0]}},$r_freq);
+				push(@{$probs{$coords[1]}},$r_freq);
+			}
+		}
+		else{
+			if(exists $phased{$coords[0]}){
+				if($phased{$coords[0]}{0} eq 'A'){
+					if($c_freq > $r_freq){
+						$phased{$coords[1]}{0} = 'A';
+						$phased{$coords[1]}{1} = 'a';
+						push(@{$probs{$coords[1]}},$c_freq);
+						push(@{$probs{$coords[0]}},$c_freq);
+					}
+					else{
+						$phased{$coords[1]}{0} = 'a';
+						$phased{$coords[1]}{1} = 'A';
+						push(@{$probs{$coords[1]}},$r_freq);
+						push(@{$probs{$coords[0]}},$r_freq);
+					}
+				}
+				else{
+					if($c_freq > $r_freq){
+						$phased{$coords[1]}{0} = 'a';
+						$phased{$coords[1]}{1} = 'A';
+						push(@{$probs{$coords[0]}},$c_freq);
+						push(@{$probs{$coords[1]}},$c_freq);
+					}
+					else{
+						$phased{$coords[1]}{0} = 'A';
+						$phased{$coords[1]}{1} = 'a';
+						push(@{$probs{$coords[0]}},$r_freq);
+						push(@{$probs{$coords[0]}},$r_freq);
+					}
+				}
+			}
+			else{
+				next;
+			}
+		}
 	}
 }
 
+my @sites = nsort keys %probs;
+for (my $t = 0; $t < @file; $t++){
+	chomp($file[$t]);
+	my @cols = split("\t",$file[$t]);
+	my $id = join("_",@cols[0..1]);
+	if(!exists $probs{$id}){
+		next;
+	}
+	elsif(!exists $phased{$id}){
+		next;
+	}
+	my @prob = @{$probs{$id}};
+	my $ave = mean(@prob);
+	print $output "$sites[$t]\t$phased{$id}{0}\t$phased{$id}{1}\t$ave";
+	foreach(@cols[2..$#cols]){
+		if($_ eq $phased{$id}{0}){
+			print $output "\t0";
+		}
+		elsif($_ eq $phased{$id}{1}){
+			print $output "\t1";
+		}
+		else{
+			print $output "\t-";
+		}
+	}
+	print $output "\n";
+}
 
 close $output;
 ####################################################
 ## 		    Subroutines			  ##
 ####################################################
-sub assign_phase {
 
+sub mean{
+	sum(@_)/@_;
+}
+
+sub assign_phase {
+	
 }
 
 sub calc_ld{
@@ -178,11 +286,11 @@ Output file name [String|Default=phased.out]
 
 =item B<--win>
 
-Set minimum window size for estimating recombination frequencies [Int|Default=20]
+Set minimum window size for estimating LD [Int|Default=20]
 
 =item B<--step>
 
-Set minimum step size for the sliding window, defaults to a quarter of the window size [Int|Default=5]
+Set minimum step size for the sliding window, defaults to 1 [Int|Default=1]
 
 =item B<--help>
 
