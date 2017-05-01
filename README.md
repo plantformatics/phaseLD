@@ -24,18 +24,23 @@ Click [here] for link to cpanm.
 ## Usage
 ```
 Usage:
-    phaseLD.pl --in [OPTIONS]
+    phase_F1_LD.pl --in [OPTIONS]
 
 Options:
     --in    Genotype file [String|REQUIRED]
 
     --out   Output file name [String|Default=phased.out]
 
-    --win   Set minimum window size for estimating LD
-            [Int|Default=20]
+    --win   Set minimum window size for estimating LD [Int|Default=20]
 
-    --step  Set minimum step size for the sliding window, 
-	    defaults to 1 [Int|Default=1]
+    --step  Set minimum step size for LD calculations in a sliding window,
+            defaults to 1 [Int|Default=1]
 
     --help  Print a brief help message and exit
+
+    --bwin  Set minimum window size for bayes haplotype calling
+            [Int|Default=50]
+
+    --bstep Set minimum step size for bayes haplotype calling
+            [Int|Default=5]
 ```
