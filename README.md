@@ -6,6 +6,15 @@ A simple LD based method to quickly phase pseudo-oneway test cross populations. 
 
 Please cite "" if you use this software.  
 
+## Dependencies
+phaseLD.pl and HMM_snp.pl require users to have the following perl modules available to @INC:
+
+1) Sort::Naturally
+2) Getopt::Long
+3) Pod::Usage
+4) List::Util
+5) Parallel::ForkManager
+
 ## Usage
 ```
 Usage:
