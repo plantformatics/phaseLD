@@ -317,14 +317,14 @@ for (my $t = 0; $t < @file; $t++){
 
 print STDERR "Begin Bayes window based haplotype calling...\n";
 my @snps = nsort keys %calls;
-for (my $i = 0; $i < @snps; $i++){
+for (my $i = 0; $i < @snps-$bwin+1; $i+=$bstep){
 	my $pid = $pm->start and next;
 	my $end;
-	if($i + $win > @snps){
+	if($i + $bwin > @snps){
 		$end = @snps;
 	}
 	else{
-		$end = $i + $win;
+		$end = $i + $bwin;
 	}
 	my $win_snp = join(":",$snps[$i],$snps[$end-1]);
 	print STDERR "Current window => $win_snp, iteration $i in progress...\n";
@@ -396,12 +396,12 @@ sub bayes {
 		my $n_call = $ave_call/@snps;
 		my $total = $hap0 + $hap1;
 		my $prob_0_r = binomial($total,$hap1)*((1-$n_call)**$hap1)*($n_call**$hap0)*0.5;
-		my $prob_1_r = binomial($total,$hap0)*($n_call**$hap1)*((1-$n_call)**$hap0)*0.5;
+		my $prob_1_r = binomial($total,$hap1)*($n_call**$hap1)*((1-$n_call)**$hap0)*0.5;
 		my $total_prob = $prob_0_r + $prob_1_r;
 		my $prob_0 = $prob_0_r/$total_prob;
 		my $prob_1 = $prob_1_r/$total_prob;
-		$bcalls{$window_snps}{$indivs[$i]}{0} = sprintf("%.5f", $prob_0);
-		$bcalls{$window_snps}{$indivs[$i]}{1} = sprintf("%.5f", $prob_1);
+		$bcalls{$window_snps}{$indivs[$i]}{0} = sprintf("%.10f", $prob_0);
+		$bcalls{$window_snps}{$indivs[$i]}{1} = sprintf("%.10f", $prob_1);
 	}
 	return(\%bcalls);
 }
