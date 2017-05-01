@@ -65,6 +65,8 @@ $pm->run_on_finish( sub{
         }
 });
 
+print STDERR "Running with $threads threads...\n";
+
 ####################################################
 ##		  Phase Gentoypes 		  ##
 ####################################################
@@ -324,6 +326,8 @@ for (my $i = 0; $i < @snps; $i++){
 	else{
 		$end = $i + $win;
 	}
+	my $win_snp = join(":",$snps[$i],$snps[$end-1]);
+	print STDERR "Current window => $win_snp, iteration $i in progress...\n";
 	my %temp;
 	my %temp_probs;
 	for (my $j = $i; $j < $end; $j++){
