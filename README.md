@@ -9,13 +9,16 @@ Please cite "" if you use this software.
 ## Dependencies
 phaseLD.pl and HMM_snp.pl require users to have the following perl modules available to @INC:
 
-1) Sort::Naturally
-2) Getopt::Long
-3) Pod::Usage
-4) List::Util
-5) Parallel::ForkManager
+1) [Sort::Naturally](http://search.cpan.org/~bingos/Sort-Naturally-1.03/lib/Sort/Naturally.pm)
+2) [Getopt::Long](http://perldoc.perl.org/Getopt/Long.html)
+3) [Pod::Usage](http://search.cpan.org/~marekr/Pod-Usage-1.69/lib/Pod/Usage.pm)
+4) [List::Util](http://search.cpan.org/~pevans/Scalar-List-Utils-1.47/lib/List/Util.pm)
+5) [Parallel::ForkManager](search.cpan.org/~yanick/Parallel-ForkM…)
 
-All modules are available from CPAN, and can be accessed with cpan/cpanm ()
+All modules are available from CPAN, and can be accessed with cpan/cpanm 
+Click [here] for link to cpanm
+[here]:http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
+
 ## Usage
 ```
 Usage:
