@@ -24,7 +24,7 @@ Click [here] for link to cpanm.
 ## Usage
 ```
 Usage:
-    phase_F1_LD.pl --in [OPTIONS]
+    phaseLD.pl --in [OPTIONS]
 
 Options:
     --in    Genotype file [String|REQUIRED]

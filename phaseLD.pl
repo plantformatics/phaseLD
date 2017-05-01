@@ -347,8 +347,8 @@ sub bayes {
 		my $total_prob = $prob_0_r + $prob_1_r;
 		my $prob_0 = $prob_0_r/$total_prob;
 		my $prob_1 = $prob_1_r/$total_prob;
-		$bcalls{$window_snps}{$indivs[$i]}{0} = $prob_0;
-		$bcalls{$window_snps}{$indivs[$i]}{1} = $prob_1;
+		$bcalls{$window_snps}{$indivs[$i]}{0} = sprintf("%.5f", $prob_0);
+		$bcalls{$window_snps}{$indivs[$i]}{1} = sprintf("%.5f", $prob_1);
 	}
 	return(\%bcalls);
 }
@@ -418,7 +418,7 @@ F1 Diploid Genotype Phasing, Alexandre Marand & Hainan Zhao
 
 =head1 SYNOPSIS
 
-phase_F1_LD.pl --in [OPTIONS]
+phaseLD.pl --in [OPTIONS]
 
 =head1 OPTIONS
 
