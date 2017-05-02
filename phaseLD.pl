@@ -75,6 +75,11 @@ print STDERR "Running with $threads threads...\n";
 ##		  Phase Gentoypes 		  ##
 ####################################################
 
+open F, $gen or die;
+my @file = <F>;
+close F;
+
+## remove bad markers if filter flag is one
 my %remove;
 if($filt){
 	print STDERR "Removing markers from $filt before processing...\n";
@@ -85,13 +90,23 @@ if($filt){
 		$remove{$col[0]} = 1;
 	}
 	close G;
-	
+	my @file1;
+	for (my $t = 0; $t < @file; $t++){
+		my $line = $file[$t];
+		chomp($file[$t]);
+		my @col = split("\t",$file[$t]);
+		my $id = join("_",@col[0..1]);
+		if(exists $remove{$id}){
+			next;
+		}
+		else{
+			push(@file1,$line);
+		}
+	}
+	@file = @file1;
 }
 
-open F, $gen or die;
-my @file = <F>;
-close F;
-
+## phase genotypes
 my $out1 = $out . '.out';
 my $logs = $out . '.log';
 my $log_hap = $out . '.raw_haplotypes';
@@ -113,6 +128,7 @@ for (my $i = 0; $i < @file; $i+=$step){
 	else{
 		$end = @file;
 	}
+	my $current_marker_pass = 0;
 	for (my $j = $i+1; $j < $end; $j++){
 		chomp($file[$i]);
 		chomp($file[$j]);
@@ -120,9 +136,6 @@ for (my $i = 0; $i < @file; $i+=$step){
 		my @pos2 = split("\t",$file[$j]);
 		my $id1 = join("_",@pos1[0..1]);
 		my $id2 = join("_",@pos2[0..1]);
-		if(exists $remove{$id1} || exists $remove{$id2}){
-			next;
-		}
 		my @results = calc_ld(\@pos1,\@pos2);
 		my $linkage = $results[0];
 		if($linkage eq 'NA'){
@@ -147,7 +160,11 @@ for (my $i = 0; $i < @file; $i+=$step){
 			}
 			print $log "\n";
 			if($coupling < 0.7 && $repulsion < 0.7 || $r2 < $r2_threshold){
-				#print $bad "$id1:$id2\tlow_r2_hap_freq\n";
+				$current_marker_pass++;
+				if($current_marker_pass > $win/2){
+					print $bad "$id1\tconsistently_poor_r2\n";
+					last;
+				}
 				next;
 			}
 			elsif($r2 >= $r2_threshold){
@@ -347,7 +364,7 @@ close $bad;
 
 print STDERR "Begin Bayes window based haplotype calling...\n";
 my @snps = nsort keys %calls;
-for (my $i = 0; $i < @snps-$bstep; $i+=$bstep){
+for (my $i = 0; $i < @snps-$bwin+$bstep; $i+=$bstep){
 	my $pid = $pm->start and next;
 	my $end;
 	if($i + $bwin > @snps){
