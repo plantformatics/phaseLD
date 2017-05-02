@@ -12,13 +12,14 @@ use Parallel::ForkManager;
 ######################################################
 
 my $gen;
-my $out = 'phased.out';
+my $out = 'phased';
 my $help;
 my $win = 20;
 my $step = 1;
 my $bwin = 50;
 my $bstep = 5;
 my $threads = 1;
+my $filt;
 
 GetOptions(
         'in=s'          => \$gen,
@@ -28,6 +29,7 @@ GetOptions(
 	'bwin:i'	=> \$bwin,
 	'bstep:i'	=> \$bstep,
 	'threads:i'	=> \$threads,
+	'filter:s'	=> \$filt,
         'help!'         => \$help
 ) or pod2usage(-verbose => 1) && exit;
 
@@ -71,16 +73,33 @@ print STDERR "Running with $threads threads...\n";
 ##		  Phase Gentoypes 		  ##
 ####################################################
 
+my %remove;
+if($filt){
+	print STDERR "Removing markers from $filt before processing...\n";
+	open G, $filt or die;
+	while(<G>){
+		chomp;
+		my @col = split("\t",$_);
+		$remove{$col[0]} = 1;
+	}
+	close G;
+	
+}
+
 open F, $gen or die;
 my @file = <F>;
 close F;
-open (my $output, '>', $out), or die;
 
-my $logs = 'log.txt';
-open (my $log, '>', $logs), or die;
+my $out1 = $out . '.out';
+my $logs = $out . '.log';
+my $log_hap = $out . '.raw_haplotypes';
+my $bad_log = $out . '.bad';
+open (my $output, '>', $out1) or die;
+open (my $log, '>', $logs) or die;
+open (my $rawhap, '>', $log_hap) or die;
+open (my $bad, '>', $bad_log) or die;
 
 my %hash;
-my %orphan;
 my %probs;
 my $check = 0;
 print STDERR "Calculating LD...\n";
@@ -99,6 +118,9 @@ for (my $i = 0; $i < @file; $i+=$step){
 		my @pos2 = split("\t",$file[$j]);
 		my $id1 = join("_",@pos1[0..1]);
 		my $id2 = join("_",@pos2[0..1]);
+		if(exists $remove{$id1} || exists $remove{$id2}){
+			next;
+		}
 		my @results = calc_ld(\@pos1,\@pos2);
 		my $linkage = $results[0];
 		if($linkage eq 'NA'){
@@ -107,9 +129,6 @@ for (my $i = 0; $i < @file; $i+=$step){
 		}
 		else{
 			my $r2 = $results[1];
-			if($r2 > 0.2){
-				$check++;
-			}
 			my %haps = %$linkage;
 			my @keys = sort {$haps{$b} <=> $haps{$a}} keys %haps;
 			print $log "$id1\t$id2\t$r2";
@@ -125,6 +144,14 @@ for (my $i = 0; $i < @file; $i+=$step){
 				print $log "\t$keys[$t]=$haps{$keys[$t]}";
 			}
 			print $log "\n";
+			if($coupling < 0.7 && $repulsion < 0.7 || $r2 < 0.25){
+				#print $bad "$id1:$id2\tlow_r2_hap_freq\n";
+				next;
+			}
+			elsif($r2 >= 0.25){
+				$check++;
+			}
+			my $break1;
 			if($check == 1){
 				if($coupling > $repulsion){
 					push(@{$hash{$id1}{0}},'A');
@@ -218,11 +245,6 @@ for (my $i = 0; $i < @file; $i+=$step){
 						push(@{$probs{$id2}},$repulsion);
 					}
 				}
-				elsif(!exists $hash{$id1} && !exists $hash{$id2}){
-					my $link = join(":",$id1,$id2);
-					$orphan{$link}{coup} = $coupling;
-					$orphan{$link}{rep}  = $repulsion;
-				}
 			}
 		}
 	}
@@ -249,6 +271,10 @@ for (my $t = 0; $t < @file; $t++){
 	}
 	my @prob = @{$probs{$id}};
 	my $ave = sprintf("%.3f",mean(@prob));
+	if($ave < 0.7){
+		print $bad "$id\tlow_hap_frequency\n";
+		next;
+	}
 	$ave_prob{$id} = $ave;
 	my $count_A = 0;
 	my $count_a = 0;
@@ -261,6 +287,16 @@ for (my $t = 0; $t < @file; $t++){
 		}
 	}
 	my $hap0 = $count_A + $count_a;
+	my $freq_A = $count_A / $hap0;
+	my $freq_a = $count_a / $hap0;
+	if($freq_A < 0.8 && $freq_a < 0.8){
+		print $bad "$id\tsite_freq_less_than_0.8\n";
+		next;
+	}
+	elsif($hap0 < $win/(3*$step)){
+		print $bad "$id\tlow_counts_corroboration\n";
+		next unless $hap0 == 1;
+	}
 	my $count_A1 = 0;
 	my $count_a1 = 0;
 	foreach(@{$hash{$id}{1}}){
@@ -282,19 +318,26 @@ for (my $t = 0; $t < @file; $t++){
 		$phase_1 = 'A';
 	}
 	my $it = 0;
+	print $rawhap "$cols[0]\t$cols[1]\t$phase_0\t$phase_1\t$ave";
 	foreach(@cols[2..$#cols]){
 		$it++;
 		if($_ eq $phase_0){
 			$calls{$id}{$it}=0;		
+			print $rawhap "\t1";
 		}
 		elsif($_ eq $phase_1){
 			$calls{$id}{$it}=1;
+			print $rawhap "\t2";
 		}
 		else{
 			$calls{$id}{$it}='-';
+			print $rawhap "\t3";
 		}
 	}
+	print $rawhap "\n";
 }
+close $rawhap;
+close $bad;
 
 ########################################################
 ## call window phases based on bayesian probabilities ##
@@ -302,7 +345,7 @@ for (my $t = 0; $t < @file; $t++){
 
 print STDERR "Begin Bayes window based haplotype calling...\n";
 my @snps = nsort keys %calls;
-for (my $i = 0; $i < @snps-$bwin+1; $i+=$bstep){
+for (my $i = 0; $i < @snps-$bstep; $i+=$bstep){
 	my $pid = $pm->start and next;
 	my $end;
 	if($i + $bwin > @snps){
@@ -468,7 +511,7 @@ Genotype file [String|REQUIRED]
 
 =item B<--out>
 
-Output file name [String|Default=phased.out]
+Prefix for output files [String|Default='phased']
 
 =item B<--win>
 
@@ -477,10 +520,6 @@ Set minimum window size for estimating LD [Int|Default=20]
 =item B<--step>
 
 Set minimum step size for LD calculations in a sliding window, defaults to 1 [Int|Default=1]
-
-=item B<--help>
-
-Print a brief help message and exit
 
 =item B<--bwin>
 
@@ -493,5 +532,13 @@ Set minimum step size for bayes haplotype calling [Int|Default=5]
 =item B<--threads>
 
 Set number of threads [Int|Default=1]
+
+=item B<--filter>
+
+Optionally use file with suffix 'bad' generated by phaseLD to filter poor markers. 'prefix.bad' contains IDs of bad SNPs identified in the first pass. Useful to cleaning haplotype switch problems [String|Optional]
+
+=item B<--help>
+
+Print a brief help message and exit
 
 =back
