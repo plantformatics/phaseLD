@@ -80,9 +80,11 @@ my $logs = 'log.txt';
 open (my $log, '>', $logs), or die;
 
 my %hash;
+my %orphan;
+my %probs;
+my $check = 0;
 print STDERR "Calculating LD...\n";
 for (my $i = 0; $i < @file; $i+=$step){
-	my $extend = 0;
 	my $end;
 	if(@file > $i + $win){
 		$end = $i + $win;
@@ -105,80 +107,47 @@ for (my $i = 0; $i < @file; $i+=$step){
 		}
 		else{
 			my $r2 = $results[1];
-			if($r2 == 0){
-				next;
+			if($r2 > 0.2){
+				$check++;
 			}
-			else{
-				$extend++;
-				my %haps = %$linkage;
-				my @keys = sort {$haps{$b} <=> $haps{$a}} keys %haps;
-				my $att = join(":",$id1,$id2,$r2);
-				print $log "$id1\t$id2\t$r2";
-				for (my $t = 0; $t < @keys; $t++){
-					$hash{$att}{$keys[$t]} = $haps{$keys[$t]};
-					print $log "\t$keys[$t]=$haps{$keys[$t]}";
+			my %haps = %$linkage;
+			my @keys = sort {$haps{$b} <=> $haps{$a}} keys %haps;
+			print $log "$id1\t$id2\t$r2";
+			my $coupling = 0;
+			my $repulsion = 0;
+			for (my $t = 0; $t < @keys; $t++){
+				if($keys[$t] eq 'AA' || $keys[$t] eq 'aa'){
+					$coupling = $coupling + $haps{$keys[$t]};
 				}
-				print $log "\n";
+				elsif($keys[$t] eq 'Aa' || $keys[$t] eq 'aA'){
+					$repulsion = $repulsion + $haps{$keys[$t]};
+				}
+				print $log "\t$keys[$t]=$haps{$keys[$t]}";
 			}
-		}
-	}
-}
-close $log;
-
-######################################## 
-## analyze LD information for phasing ##
-########################################
-
-my %phased;
-my %probs;
-my @keys = nsort keys %hash;
-my $check = 0;
-print STDERR "Begin phasing algorithm...\n";
-for (my $j = 0; $j < @keys; $j++){
-	my @coords = split(":",$keys[$j]);
-	my @haps = sort {$hash{$keys[$j]}{$b} <=> $hash{$keys[$j]}{$a}} keys $hash{$keys[$j]};
-	my $coup = 0;
-	my $rep = 0;
-	foreach(@haps){
-		if($_ eq 'AA' || $_ eq 'aa'){
-			$coup = $coup + $hash{$keys[$j]}{$_};
-		}
-		elsif($_ eq 'Aa' || $_ eq 'aA'){
-			$rep = $rep + $hash{$keys[$j]}{$_};
-		}
-	}
-	my $total = $coup + $rep;
-	my $c_freq = $coup / $total;
-	my $r_freq = $rep / $total;
-	if($c_freq < 0.6 && $r_freq < 0.6){
-		next;
-	}
-	else{
-		$check++;
-		if($check == 1){
-			if($c_freq > $r_freq){
-				push(@{$phased{$coords[0]}{0}},'A');
-				push(@{$phased{$coords[0]}{1}},'a');
-				push(@{$phased{$coords[1]}{0}},'A');
-				push(@{$phased{$coords[1]}{1}},'a');
-				push(@{$probs{$coords[0]}},$c_freq); 
-				push(@{$probs{$coords[1]}},$c_freq);
+			print $log "\n";
+			if($check == 1){
+				if($coupling > $repulsion){
+					push(@{$hash{$id1}{0}},'A');
+					push(@{$hash{$id2}{0}},'A');
+					push(@{$hash{$id1}{1}},'a');
+					push(@{$hash{$id2}{1}},'a'); 
+					push(@{$probs{$id1}},$coupling);
+					push(@{$probs{$id2}},$coupling);
+				}
+				else{
+					push(@{$hash{$id1}{0}},'A');
+					push(@{$hash{$id2}{0}},'a');
+					push(@{$hash{$id1}{1}},'a');
+					push(@{$hash{$id2}{1}},'A');
+					push(@{$probs{$id1}},$repulsion);
+					push(@{$probs{$id2}},$repulsion);
+				}
 			}
-			else{
-				push(@{$phased{$coords[0]}{0}},'A');
-				push(@{$phased{$coords[0]}{1}},'a');
-				push(@{$phased{$coords[1]}{0}},'a');
-				push(@{$phased{$coords[1]}{1}},'A');
-				push(@{$probs{$coords[0]}},$r_freq);
-				push(@{$probs{$coords[1]}},$r_freq);
-			}
-		}
-		else{
-			if(exists $phased{$coords[0]}){
-				my $cnt_A = 0;
-				my $cnt_a = 0;
-				if(@{$phased{$coords[0]}{0}} > 1){
-					my @array = @{$phased{$coords[0]}{0}};
+			elsif($check > 0){
+				if(exists $hash{$id1}){
+					my $cnt_A = 0;
+					my $cnt_a = 0;
+					my @array = @{$hash{$id1}{0}};
 					foreach(@array){
 						if($_ eq 'A'){
 							$cnt_A++;
@@ -187,56 +156,84 @@ for (my $j = 0; $j < @keys; $j++){
 							$cnt_a++;
 						}
 					}
-				}
-				else{
-					if($phased{$coords[0]}{0} eq 'A'){
-						$cnt_A++;
+					if($coupling > $repulsion){
+						if($cnt_A >= $cnt_a){
+							push(@{$hash{$id2}{0}},'A');
+							push(@{$hash{$id2}{1}},'a');
+						}
+						else{
+							push(@{$hash{$id2}{0}},'a');
+							push(@{$hash{$id2}{1}},'A');
+						}
+						push(@{$probs{$id1}},$coupling);
+						push(@{$probs{$id2}},$coupling);
 					}
 					else{
-						$cnt_a++;
-					}
+						if($cnt_A >= $cnt_a){
+							push(@{$hash{$id2}{0}},'a');
+							push(@{$hash{$id2}{1}},'A');
+						}
+						else{
+							push(@{$hash{$id2}{0}},'A');
+							push(@{$hash{$id2}{1}},'a');
+						}
+						push(@{$probs{$id1}},$repulsion);
+						push(@{$probs{$id2}},$repulsion);
+					}		
 				}
-				my $break;
-				if($cnt_A > $cnt_a){
-					if($c_freq > $r_freq){
-						push(@{$phased{$coords[1]}{0}},'A');
-						push(@{$phased{$coords[1]}{1}},'a');
-						push(@{$probs{$coords[1]}},$c_freq);
-						push(@{$probs{$coords[0]}},$c_freq);
+				elsif(!exists $hash{$id1} && exists $hash{$id2}){
+					my $cnt_A = 0;
+					my $cnt_a = 0;
+					my @array = @{$hash{$id2}{0}};
+					foreach(@array){
+						if($_ eq 'A'){
+							$cnt_A++;
+						}
+						else{
+							$cnt_a++;
+						}
+					}
+					if($coupling > $repulsion){
+						if($cnt_A >= $cnt_a){
+							push(@{$hash{$id1}{0}},'A');
+							push(@{$hash{$id1}{1}},'a');
+						}
+						else{
+							push(@{$hash{$id1}{0}},'a');
+							push(@{$hash{$id1}{1}},'A');
+						}
+						push(@{$probs{$id1}},$coupling);
+						push(@{$probs{$id2}},$coupling);
 					}
 					else{
-						push(@{$phased{$coords[1]}{0}},'a');
-						push(@{$phased{$coords[1]}{1}},'A');
-						push(@{$probs{$coords[1]}},$r_freq);
-						push(@{$probs{$coords[0]}},$r_freq);
+						if($cnt_A >= $cnt_a){
+							push(@{$hash{$id1}{0}},'a');
+							push(@{$hash{$id1}{1}},'A');
+						}
+						else{
+							push(@{$hash{$id1}{0}},'A');
+							push(@{$hash{$id1}{1}},'a');
+						}
+						push(@{$probs{$id1}},$repulsion);
+						push(@{$probs{$id2}},$repulsion);
 					}
 				}
-				else{
-					if($c_freq > $r_freq){
-						push(@{$phased{$coords[1]}{0}},'a');
-						push(@{$phased{$coords[1]}{1}},'A');
-						push(@{$probs{$coords[0]}},$c_freq);
-						push(@{$probs{$coords[1]}},$c_freq);
-					}
-					else{
-						push(@{$phased{$coords[1]}{0}},'A');
-						push(@{$phased{$coords[1]}{1}},'a');
-						push(@{$probs{$coords[0]}},$r_freq);
-						push(@{$probs{$coords[0]}},$r_freq);
-					}
+				elsif(!exists $hash{$id1} && !exists $hash{$id2}){
+					my $link = join(":",$id1,$id2);
+					$orphan{$link}{coup} = $coupling;
+					$orphan{$link}{rep}  = $repulsion;
 				}
-			}
-			else{
-				next;
 			}
 		}
 	}
 }
+close $log;
 
 ################################################
 ## create new hash with haplotype assignments ##
 ################################################
 
+print STDERR "Assigning haplotypes to SNP calls...\n";
 my %calls;
 my %ave_prob;
 my @sites = nsort keys %probs;
@@ -247,7 +244,7 @@ for (my $t = 0; $t < @file; $t++){
 	if(!exists $probs{$id}){
 		next;
 	}
-	elsif(!exists $phased{$id}){
+	elsif(!exists $hash{$id}){
 		next;
 	}
 	my @prob = @{$probs{$id}};
@@ -255,7 +252,7 @@ for (my $t = 0; $t < @file; $t++){
 	$ave_prob{$id} = $ave;
 	my $count_A = 0;
 	my $count_a = 0;
-	foreach(@{$phased{$id}{0}}){
+	foreach(@{$hash{$id}{0}}){
 		if($_ eq 'A'){
 			$count_A++;
 		}
@@ -263,28 +260,16 @@ for (my $t = 0; $t < @file; $t++){
 			$count_a++;
 		}
 	}
-	if($count_A > 0 && $count_a > 0){
-		next;
-	}
 	my $hap0 = $count_A + $count_a;
-	if($hap0 < 10){
-		next;
-	}
 	my $count_A1 = 0;
 	my $count_a1 = 0;
-	foreach(@{$phased{$id}{1}}){
+	foreach(@{$hash{$id}{1}}){
 		if($_ eq 'A'){
 			$count_A1++;
 		}
 		else{
 			$count_a1++;
 		}
-	}
-	if($count_A1 > 0 && $count_a1 > 0){
-		next;
-	}
-	elsif($count_A1 + $count_a1 < 10){
-		next;
 	}
 	my $phase_0;
 	my $phase_1;
@@ -331,10 +316,10 @@ for (my $i = 0; $i < @snps-$bwin+1; $i+=$bstep){
 	my %temp;
 	my %temp_probs;
 	for (my $j = $i; $j < $end; $j++){
-		my @inds = nsort keys $calls{$snps[$i]};
+		my @inds = nsort keys $calls{$snps[$j]};
 		$temp_probs{$snps[$j]} = $ave_prob{$snps[$j]};
 		for (my $z = 0; $z<@inds;$z++){
-			$temp{$inds[$z]}{$snps[$j]} = $calls{$snps[$i]}{$inds[$z]};
+			$temp{$inds[$z]}{$snps[$j]} = $calls{$snps[$j]}{$inds[$z]};
 		}
 	}
 	my $bayes_calls = bayes(\%temp,\%temp_probs);
