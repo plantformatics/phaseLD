@@ -1,7 +1,7 @@
 # phaseLD
 Developed by Alexandre Marand & Hanain Zhao, 2017
 
-A simple LD based method to quickly phase pseudo-oneway test cross populations. Users should use a two step approach, first identifying the most probable haplotypes, via Bayesian methods (within phaseLD.pl), followed by HMM refinement of called haplotypes with HMM_snp.pl. 
+A simple LD based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian methods (within phaseLD.pl). Optionally, users can implement an HMM on the raw SNP haplotype calls, which models error and recombination rates between loci to infer the most probable haplotypes.
 
 Please cite "" if you use this software.  
 
@@ -34,6 +34,10 @@ Options:
 
     --step|-s     Set minimum step size for LD calculations in a sliding
                   window, defaults to 1 [Int|Default=1]
+
+    --rpen|-r     Set minimum r2 value needed to retain SNPs. This threshold
+                  helps to remove false positive SNP call. Defaults to 0.25.
+                  [Int|Default=0.25]
 
     --bwin|-n     Set minimum window size for bayes haplotype calling
                   [Int|Default=50]

@@ -7,7 +7,7 @@ open F, $ARGV[0] or die;
 while(<F>){
 	chomp;
 	my @col = split("\t", $_);
-	if($col[2] < 0.15){
+	if($col[2] < 0.1){
 		$hash{$col[0]} = 1;
 	}
 }

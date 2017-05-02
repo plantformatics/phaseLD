@@ -20,12 +20,14 @@ my $bwin = 50;
 my $bstep = 5;
 my $threads = 1;
 my $filt;
+my $r2_threshold = 0.25;
 
 GetOptions(
-        'in|i=s'          => \$gen,
-        'out|o:s'         => \$out,
-        'win|w:i'         => \$win,
-        'step|s:i'        => \$step,
+        'in|i=s'        => \$gen,
+        'out|o:s'       => \$out,
+        'win|w:i'       => \$win,
+        'step|s:i'      => \$step,
+	'rpen|r:i'	=> \$r2_threshold,
 	'bwin|n:i'	=> \$bwin,
 	'bstep|t:i'	=> \$bstep,
 	'threads|p:i'	=> \$threads,
@@ -144,11 +146,11 @@ for (my $i = 0; $i < @file; $i+=$step){
 				print $log "\t$keys[$t]=$haps{$keys[$t]}";
 			}
 			print $log "\n";
-			if($coupling < 0.7 && $repulsion < 0.7 || $r2 < 0.25){
+			if($coupling < 0.7 && $repulsion < 0.7 || $r2 < $r2_threshold){
 				#print $bad "$id1:$id2\tlow_r2_hap_freq\n";
 				next;
 			}
-			elsif($r2 >= 0.25){
+			elsif($r2 >= $r2_threshold){
 				$check++;
 			}
 			my $break1;
@@ -520,6 +522,10 @@ Set minimum window size for estimating LD [Int|Default=20]
 =item B<--step|-s>
 
 Set minimum step size for LD calculations in a sliding window, defaults to 1 [Int|Default=1]
+
+=item B<--rpen|-r>
+
+Set minimum r2 value needed to retain SNPs. This threshold helps to remove false positive SNP call. Defaults to 0.25. [Int|Default=0.25]
 
 =item B<--bwin|-n>
 
