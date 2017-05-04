@@ -79,7 +79,7 @@ open F, $gen or die;
 my @file = <F>;
 close F;
 
-## remove bad markers if filter flag is one
+## remove bad markers if filter flag is on
 my %remove;
 if($filt){
 	print STDERR "Removing markers from $filt before processing...\n";
@@ -159,9 +159,9 @@ for (my $i = 0; $i < @file; $i+=$step){
 				print $log "\t$keys[$t]=$haps{$keys[$t]}";
 			}
 			print $log "\n";
-			if($coupling < 0.7 && $repulsion < 0.7 || $r2 < $r2_threshold){
+			if($r2 < $r2_threshold){
 				$current_marker_pass++;
-				if($current_marker_pass > $win/2){
+				if($current_marker_pass > $win/3){
 					print $bad "$id1\tconsistently_poor_r2\n";
 					last;
 				}
@@ -342,15 +342,15 @@ for (my $t = 0; $t < @file; $t++){
 		$it++;
 		if($_ eq $phase_0){
 			$calls{$id}{$it}=0;		
-			print $rawhap "\t1";
+			print $rawhap "\t0";
 		}
 		elsif($_ eq $phase_1){
 			$calls{$id}{$it}=1;
-			print $rawhap "\t2";
+			print $rawhap "\t1";
 		}
 		else{
 			$calls{$id}{$it}='-';
-			print $rawhap "\t3";
+			print $rawhap "\t-";
 		}
 	}
 	print $rawhap "\n";
@@ -441,9 +441,9 @@ sub bayes {
 			}
 		}
 		my $n_call = $ave_call/@snps;
-		my $total = $hap0 + $hap1;
-		my $prob_0_r = binomial($total,$hap1)*((1-$n_call)**$hap1)*($n_call**$hap0)*0.5;
-		my $prob_1_r = binomial($total,$hap1)*($n_call**$hap1)*((1-$n_call)**$hap0)*0.5;
+		my $total = $hap0 + $hap1 + $missing;
+		my $prob_0_r = (binomial($total,$hap0))*((1-$n_call)**$hap1)*($n_call**$hap0)*0.5;
+		my $prob_1_r = (binomial($total,$hap1))*($n_call**$hap1)*((1-$n_call)**$hap0)*0.5;
 		my $total_prob = $prob_0_r + $prob_1_r;
 		my $prob_0 = $prob_0_r/$total_prob;
 		my $prob_1 = $prob_1_r/$total_prob;
@@ -463,8 +463,18 @@ sub calc_ld{
 	my @snp2 = @$loc2;
 	my %temp;
 	my %out;
+	my $total1 = 0;
+	$temp{1}{A} = 0;
+	$temp{1}{a} = 0;
+	$temp{2}{A} = 0;
+	$temp{2}{a} = 0;
+	$temp{3}{AA} = 0;
+	$temp{3}{aa} = 0;
+	$temp{3}{Aa} = 0;
+	$temp{3}{aA} = 0;
 	for (my $t = 2; $t < @snp1; $t++){
 		if($snp1[$t] ne '-' && $snp2[$t] ne '-'){
+			$total1++;
 			my $hap = join("",$snp1[$t],$snp2[$t]);
 			$temp{3}{$hap}++;
 			$temp{1}{$snp1[$t]}++;
@@ -474,31 +484,33 @@ sub calc_ld{
 	my @keysA = sort {$temp{1}{$b} <=> $temp{1}{$a}} keys $temp{1};
 	my @keysB = sort {$temp{2}{$b} <=> $temp{2}{$a}} keys $temp{2};
 	my @haps  = sort {$temp{3}{$b} <=> $temp{3}{$a}} keys $temp{3};
-	if(@keysA != 2 || @keysB != 2){
-		return('NA');
-	}
-	my $tA = $temp{1}{$keysA[0]} + $temp{1}{$keysA[1]};
-	my $tB = $temp{2}{$keysB[0]} + $temp{2}{$keysB[1]};
 	my $r2 = 0;
-	if($tA == 0 || $tB == 0){
+	if($total1 == 0){
 		return('NA');
 	} 
 	else{
 		for (my $x = 0; $x < @haps; $x++){
 			my $haplotype = $haps[$x];
 			my @alleles = split("",$haplotype);
-			my $fpA = $temp{1}{$alleles[0]} / $tA;
-			my $fpB = $temp{2}{$alleles[1]} / $tB;
-			my $fpAB = $temp{3}{$haplotype} / $tA;
-			if($fpA == 1){
-				$fpA = 0.99;
+			my $fpA = $temp{1}{$alleles[0]} / $total1;
+			my $fpa = 1 - $fpA;
+			my $fpB = $temp{2}{$alleles[1]} / $total1;
+			my $fpb = 1 - $fpB;
+			my $fpAB = $temp{3}{$haplotype} / $total1;
+			if($fpA == 0){
+				$fpA = 1/$total1;
 			}
-			my $break;
-			if($fpB == 1){
-				$fpB = 0.99;
+			if($fpa == 0){
+				$fpa = 1/$total1;
+			}
+			if($fpB == 0){
+				$fpB = 1/$total1;
+			}
+			if($fpb == 0){
+				$fpb = 1/$total1;
 			}
 			my $Dab = $fpAB - ($fpA*$fpB);
-			my $denom = $fpA*(1-$fpA)*$fpB*(1-$fpB);
+			my $denom = $fpA*$fpa*$fpB*$fpb;
 			$r2 = ($Dab**2)/$denom;
 			$out{$haplotype} = $fpAB;	
 		}
