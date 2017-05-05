@@ -703,19 +703,19 @@ Prefix for output files [String|Default='phased']
 
 =item B<--win|-w>
 
-Set minimum window size for estimating LD [Int|Default=20]
+Set minimum window size for estimating Pairwise LD (when --quick_mode or --fast_mode are False). If --quick_mode or --fast_mode are enabled, this distance becomes the search area for linked markers. Windows are dynamically extended if no markers within the specified window are in linkage with the current iteration. Markers which are not linked with neighboring markers are typically false positives. See prefix.log to identify markers with low linkage. [Int|Default=20]
 
 =item B<--step|-s>
 
-Set minimum step size for LD calculations in a sliding window, defaults to 1 [Int|Default=1]
+Set minimum step size for LD calculations in a sliding window, defaults to 1. [Int|Default=1]
 
 =item B<--bwin|-n>
 
-Set minimum window size for bayes haplotype calling [Int|Default=50]
+Set minimum window size for bayes haplotype calling. [Int|Default=50]
 
 =item B<--bstep|-t>
 
-Set minimum step size for bayes haplotype calling [Int|Default=5]
+Set minimum step size for bayes haplotype calling. [Int|Default=5]
 
 =item B<--rpen|-r>
 
@@ -729,19 +729,19 @@ Set minimum r2 value needed to retain SNPs. This threshold helps to remove false
 
 =item B<--threads|-p>
 
-Set number of threads [Int|Default=1]
+Set number of threads. [Int|Default=1]
 
 =item B<--quick_mode|-f>
 
-Instead of calculating LD for every marker in the window, calculate LD for window_size/10. The next position is the first marker above the R2 threshold. This makes the computation 10-20X faster for the default window size. Time saved increases exponentially as window sizes get larger.
+Instead of calculating LD for every marker in the window, calculate LD for window_size/10. The next position is the first marker above the R2 threshold. This makes the computation 10-20X faster for the default window size. Time saved increases exponentially as window sizes get larger. [Boolean|Default=False]
 
 =item B<--fast_mode|-q>
 
-Rather than use pairwise LD calculations within a window, use LD chaining instead. Starting at marker X, the algorithm searches for the nearest marker, y, with R2 above the threshold. The next iteration starts at marker y and continues until all markers are exhausted. 
+Rather than use pairwise LD calculations within a window, use LD chaining instead. Starting at marker X, the algorithm searches for the nearest marker, y, with R2 above the threshold. The next iteration starts at marker y and continues until all markers are exhausted. [Boolean|Default=False] 
 
 =item B<--filter|-f>
 
-Optionally use a file to mask markers. This file should contain the chromosome and position of the marker (example: chr01_1000) on a single line. Useful to cleaning haplotype switch problems or thinning data to specific markers [String|Optional]
+Optionally use a file to mask markers. This file should contain the chromosome and position of the marker (example: chr01_1000) on a single line. Useful to cleaning haplotype switch problems or thinning data to specific markers. [String|Optional]
 
 =back
 
@@ -751,6 +751,6 @@ Optionally use a file to mask markers. This file should contain the chromosome a
 
 =item B<--help|-h>
 
-Print a brief help message and exit
+Print a brief help message and exit.
 
 =back
