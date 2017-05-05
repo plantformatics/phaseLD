@@ -186,6 +186,15 @@ for (my $i = 0; $i < @file; $i+=$step){
 		if($bounce > 0){
 			last;
 		}
+		elsif($j == $end - 1){
+			if($good_array[0]){
+				$i = $good_array[0] - 1;
+				last;
+			}
+			else{
+				next;
+			}
+		}
 		chomp($file[$i]);
 		chomp($file[$j]);
 		my @pos1 = split("\t",$file[$i]);
@@ -715,11 +724,11 @@ Set minimum r2 value needed to retain SNPs. This threshold helps to remove false
 
 Set number of threads [Int|Default=1]
 
-=item B<--fast_mode|-f>
+=item B<--quick_mode|-f>
 
-Instead of calculating LD for every marker in the window, calculate LD for window_size/10. The next position is the first marker above the R2 threshold. This makes the computation 10-20X faster for the default window size. Time saved increases exponentially as window sizes get larger. . 
+Instead of calculating LD for every marker in the window, calculate LD for window_size/10. The next position is the first marker above the R2 threshold. This makes the computation 10-20X faster for the default window size. Time saved increases exponentially as window sizes get larger.
 
-=item B<--quick_mode|-q>
+=item B<--fast_mode|-q>
 
 Rather than use pairwise LD calculations within a window, use LD chaining instead. Starting at marker X, the algorithm searches for the nearest marker, y, with R2 above the threshold. The next iteration starts at marker y and continues until all markers are exhausted. 
 

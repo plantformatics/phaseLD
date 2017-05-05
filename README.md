@@ -57,14 +57,14 @@ Description:
   Run Time Options:
     --threads|-p        Set number of threads [Int|Default=1]
 
-    --fast_mode|-f      Instead of calculating LD for every marker in the
+    --quick_mode|-f     Instead of calculating LD for every marker in the
                         window, calculate LD for window_size/10. The next
                         position is the first marker above the R2 threshold.
                         This makes the computation 10-20X faster for the
                         default window size. Time saved increases
-                        exponentially as window sizes get larger. .
+                        exponentially as window sizes get larger.
 
-    --quick_mode|-q     Rather than use pairwise LD calculations within a
+    --fast_mode|-q      Rather than use pairwise LD calculations within a
                         window, use LD chaining instead. Starting at marker
                         X, the algorithm searches for the nearest marker, y,
                         with R2 above the threshold. The next iteration
