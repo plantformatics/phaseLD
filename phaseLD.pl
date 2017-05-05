@@ -153,12 +153,12 @@ if($filt){
 ## Output files
 my $out1 = $out . '.out';
 my $logs = $out . '.log';
-my $log_hap = $out . '.raw_haplotypes';
-my $bad_log = $out . '.bad';
+my $log_hap = $out . '.raw_hap';
+#my $bad_log = $out . '.bad';
 open (my $output, '>', $out1) or die;
 open (my $log, '>', $logs) or die;
 open (my $rawhap, '>', $log_hap) or die;
-open (my $bad, '>', $bad_log) or die;
+#open (my $bad, '>', $bad_log) or die;
 
 #####################
 ## Phase Genotypes ##
@@ -487,7 +487,7 @@ for (my $t = 0; $t < @file; $t++){
 	print $rawhap "\n";
 }
 close $rawhap;
-close $bad;
+#close $bad;
 
 ########################################################
 ## call window phases based on bayesian probabilities ##
