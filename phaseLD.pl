@@ -45,6 +45,47 @@ if(!$gen){
         pod2usage(-verbose => 99) && exit;
 }
 
+my $time1 = ts();
+
+print STDERR "#########################\n";
+print STDERR "## Selected Parameters ##\n";
+print STDERR "#########################\n\n";
+print STDERR "Time: $time1\n\n";
+if(defined $gen){
+	print STDERR "--in		= $gen\n";
+}
+if(defined $out){
+	print STDERR "--out		= $out\n";
+}
+if(defined $win){
+	print STDERR "--win 		= $win\n";
+}
+if(defined $step){
+	print STDERR "--step 		= $step\n";
+}
+if(defined $rpen){
+	print STDERR "--rpen 		= $rpen\n";
+}
+if(defined $bwin){
+	print STDERR "--bwin		= $bwin\n";
+}
+if(defined $bstep){
+	print STDERR "--bstep		= $bstep\n";
+}
+if(defined $threads){
+	print STDERR "--threads	= $threads\n";
+}
+if(defined $filt){
+	print STDERR "--filter	= $filt\n";
+}
+if($fast eq 1){
+	print STDERR "--fast_mode	enabled\n";
+}
+if($quick eq 1){
+	print STDERR "--quick_mode	enabled\n";
+}
+print STDERR "\n";
+
 ####################################################
 ##           Multithreading Parameters            ##
 ####################################################
@@ -73,7 +114,6 @@ $pm->run_on_finish( sub{
         }
 });
 
-print STDERR "Running with $threads threads...\n";
 
 ####################################################
 ##		  Phase Gentoypes 		  ##
@@ -110,8 +150,6 @@ if($filt){
 	@file = @file1;
 }
 
-print STDERR "R2 penalty set to $rpen...\n";
-
 ## Output files
 my $out1 = $out . '.out';
 my $logs = $out . '.log';
@@ -122,11 +160,15 @@ open (my $log, '>', $logs) or die;
 open (my $rawhap, '>', $log_hap) or die;
 open (my $bad, '>', $bad_log) or die;
 
-## Phase Genotypes
+#####################
+## Phase Genotypes ##
+#####################
+
 my %hash;
 my %probs;
 my $check = 0;
-print STDERR "Calculating LD...\n";
+my $time2 = ts();
+print STDERR "$time2\t...Calculating LD...\n";
 for (my $i = 0; $i < @file; $i+=$step){
 	my $end;
 	if(@file > $i + $win){
@@ -135,12 +177,15 @@ for (my $i = 0; $i < @file; $i+=$step){
 	else{
 		$end = @file;
 	}
-	my $current_marker_pass = 0;
 	my $bingo = 0;
 	my $its = 0;
-	my @good_array;
+	my @good_array = ();
+	my $bounce = 0;
 	for (my $j = $i+1; $j < $end; $j++){
 		$its++;
+		if($bounce > 0){
+			last;
+		}
 		chomp($file[$i]);
 		chomp($file[$j]);
 		my @pos1 = split("\t",$file[$i]);
@@ -150,25 +195,66 @@ for (my $i = 0; $i < @file; $i+=$step){
 		my @results = calc_ld(\@pos1,\@pos2);
 		my $linkage = $results[0];
 		if($linkage eq 'NA'){
-			print $log "$id1\t$id2\tNA\n";
+			print $log "$its...$id1\t$id2\tNA\n";
 			next;
 		}
 		else{
-			my $r2 = $results[1];
-			if($r2 < $rpen){
-				next;
-			}
 			my %haps = %$linkage;
-			if($haps{AA} > 0.65 || $haps{aa} > 0.65 || $haps{Aa} > 0.65 || $haps{aA} > 0.65){
+			my $r2 = $results[1];
+			my $pr2 = sprintf("%.6f",$r2);
+			my @keys = sort {$haps{$b} <=> $haps{$a}} keys %haps;
+			print $log "A:$check..L:$its..B:$bingo\t\t$id1\t$id2\t$pr2\tT_$rpen";
+			my $dist1 = 0;
+			my $dist2 = 0;
+			my $dist3 = 0;
+			my $dist4 = 0;
+                        foreach(@keys){
+				my $val = sprintf("%.4f",$haps{$_});
+                                print $log "\t$_=$val";
+				if($_ eq 'AA' || $_ eq 'Aa'){
+					$dist1 = $haps{$_} + $dist1;
+				}
+				if($_ eq 'AA' || $_ eq 'aA'){
+					$dist2 = $haps{$_} + $dist2;
+				}
+				if($_ eq 'aa' || $_ eq 'Aa'){
+					$dist3 = $dist3 + $haps{$_};
+				}
+				if($_ eq 'aa' || $_ eq 'aA'){
+					$dist4 = $dist4 + $haps{$_};
+				}
+                        }
+			if($r2 < $rpen){
+				print $log "\tskipped\n";
 				next;
 			}
-			$bingo++;
-			push(@good_array, $j);
-			my @keys = sort {$haps{$b} <=> $haps{$a}} keys %haps;
-			print $log "$id1\t$id2\t$r2\tT_$rpen";
+			if($haps{AA} > 0.7 || $haps{aa} > 0.7 || $haps{Aa} > 0.7 || $haps{aA} > 0.7){
+				print $log "\tskipped\n";
+				next;
+			}
+			elsif($dist1 > 0.8 || $dist2 > 0.8 || $dist3 > 0.8 || $dist4 > 0.8){
+				print $log "\tskipped\n";
+				next;
+			}
+			my $best = $keys[0];
+			my $rev = $best;
+			$rev =~ tr/Aa/aA/;
+			my $dif = $haps{$best} - $haps{$rev};
+			if($dif > 0.5){
+				print $log "\tskipped\n";
+				next;
+			}
+			elsif($haps{$rev} < 0.15){
+				print $log "\tskipped\n";
+				next;
+			}
+			else{
+				print $log "\tretained\n";
+				$bingo++;
+				push(@good_array, $j);
+			}
 			my $coupling = 0;
 			my $repulsion = 0;
-			my $freq = 0;
 			for (my $t = 0; $t < @keys; $t++){
 				if($keys[$t] eq 'AA' || $keys[$t] eq 'aa'){
 					$coupling = $coupling + $haps{$keys[$t]};
@@ -176,9 +262,7 @@ for (my $i = 0; $i < @file; $i+=$step){
 				elsif($keys[$t] eq 'Aa' || $keys[$t] eq 'aA'){
 					$repulsion = $repulsion + $haps{$keys[$t]};
 				}
-				print $log "\t$keys[$t]=$haps{$keys[$t]}";
 			}
-			print $log "\n";
 			$check++;
 			if($check == 1){
 				if($coupling > $repulsion){
@@ -273,14 +357,37 @@ for (my $i = 0; $i < @file; $i+=$step){
 						push(@{$probs{$id2}},$repulsion);
 					}
 				}
+				my $b;
 				if($quick){
-					if($bingo > 5 && $bingo > $win/10){
-						$i = $good_array[$#good_array]-1;
-						last;
+					if($fast){
+						print STDERR "Error: --fast_mode and --quick_mode cannot be used together\n";
+						exit;
+					}
+					else{
+						if($bingo > 5 || $bingo > $win/10 && $its < $win){
+							$i = $good_array[0] - 1;
+							$bounce++;
+							last;
+						}
+						elsif($its == $win && $bingo > 0){
+							$i = $good_array[0] - 1;
+							$bounce++;
+							last;
+						}
 					}
 				}
 				if($fast){
-					$i = $j;
+					if($quick){
+						print STDERR "Error: --fast_mode and --quick_mode cannot be used together\n";
+						exit;
+					}
+					else{
+						$i = $j - 1;
+						$bounce++;
+						last;
+					}
+				}
+				if($bounce > 0){
 					last;
 				}
 			}
@@ -293,7 +400,8 @@ close $log;
 ## create new hash with haplotype assignments ##
 ################################################
 
-print STDERR "Assigning haplotypes to SNP calls...\n";
+my $time3 = ts();
+print STDERR "$time3\t...Assigning haplotypes to SNP calls...\n";
 my %calls;
 my %ave_prob;
 my @sites = nsort keys %probs;
@@ -309,10 +417,6 @@ for (my $t = 0; $t < @file; $t++){
 	}
 	my @prob = @{$probs{$id}};
 	my $ave = sprintf("%.3f",mean(@prob));
-#	if($ave < 0.65){
-#		print $bad "$id\tlow_hap_frequency\n";
-#		next;
-#	}
 	$ave_prob{$id} = $ave;
 	my $count_A = 0;
 	my $count_a = 0;
@@ -327,14 +431,6 @@ for (my $t = 0; $t < @file; $t++){
 	my $hap0 = $count_A + $count_a;
 	my $freq_A = $count_A / $hap0;
 	my $freq_a = $count_a / $hap0;
-#	if($freq_A < 0.8 && $freq_a < 0.8){
-#		print $bad "$id\tsite_freq_less_than_0.8\n";
-#		next;
-#	}
-#	elsif($hap0 < $win/(5*$step)){
-#		print $bad "$id\tlow_counts_corroboration\n";
-#		next unless $hap0 == 1;
-#	}
 	my $count_A1 = 0;
 	my $count_a1 = 0;
 	foreach(@{$hash{$id}{1}}){
@@ -381,11 +477,13 @@ close $bad;
 ## call window phases based on bayesian probabilities ##
 ########################################################
 
-print STDERR "Begin Bayes window based haplotype calling...\n";
+my $time4 = ts();
+print STDERR "$time4\t...Begin Bayes window based haplotype calling...\n";
 my @snps = nsort keys %calls;
 for (my $i = 0; $i < @snps-$bwin+$bstep; $i+=$bstep){
 	my $pid = $pm->start and next;
 	my $end;
+	my $time5 = ts();
 	if($i + $bwin > @snps){
 		$end = @snps;
 	}
@@ -393,7 +491,7 @@ for (my $i = 0; $i < @snps-$bwin+$bstep; $i+=$bstep){
 		$end = $i + $bwin;
 	}
 	my $win_snp = join(":",$snps[$i],$snps[$end-1]);
-	print STDERR "Current window => $win_snp, iteration $i in progress...\n";
+	print STDERR "$time5\t...Current window => $win_snp, iteration $i in progress...\n";
 	my %temp;
 	my %temp_probs;
 	for (my $j = $i; $j < $end; $j++){
@@ -538,6 +636,13 @@ sub calc_ld{
 		}
 	}
 	return(\%out,$r2);
+}
+
+sub ts {
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);
+    my $nice_timestamp = sprintf ( "%02d|%02d|%04d-%02d:%02d:%02d",
+                                   $mon+1,$mday,$year+1900,$hour,$min,$sec);
+    return $nice_timestamp;
 }
 
 ####################################################
