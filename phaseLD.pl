@@ -264,9 +264,15 @@ for (my $i = 0; $i < @file; $i+=$step){
 				print $log "\tskipped\n";
 				next;
 			}
-			elsif($haps{$rev} + $haps{$best} < 0.75){
+			elsif($haps{$rev} + $haps{$best} < 0.6){
 				if($rev ne $keys[1]){
 					print $log "\tskipped\n";
+					next;
+				}
+				else{
+					print $log "\tretained\n";
+					$bingo++;
+					push(@good_array,$j);
 				}
 			}
 			else{
@@ -580,12 +586,16 @@ sub bayes {
 		}
 		my $n_call = $ave_call/@snps;
 		my $total = $hap0 + $hap1;
+		if($total < 10){
+			$bcalls{$window_snps}{$indivs[$i]}{0} = 0.5000000000;
+	                $bcalls{$window_snps}{$indivs[$i]}{1} = 0.5000000000;
+			next;
+		}
 		my $p0_bc = binomial($total,$hap1);
 		my $p1_bc = binomial($total,$hap0);
 		my $p0_top = $p0_bc * ((1-$n_call)**$hap1) * ($n_call**$hap0) * 0.5;
 		my $p1_top = $p1_bc * ((1-$n_call)**$hap0) * ($n_call**$hap1) * 0.5;
 		my $total_prob = $p0_top + $p1_top;
-#		print STDERR "E = $n_call h0 = $hap0 h1 = $hap1 p0_bc = $p0_bc p1_bc = $p1_bc p0 = $p0_top\tp1 = $p1_top\n";
 		my $prob_0 = $p0_top/$total_prob;
 		my $prob_1 = $p1_top/$total_prob;
 		$bcalls{$window_snps}{$indivs[$i]}{0} = sprintf("%.10f", $prob_0);

@@ -20,11 +20,11 @@ Click [here] for link to cpanm.
 [here]: http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
 
 ## Preparing Data
-phaseLD expects pseudo-oneway test cross populations, segregation ratios of 1:1 of homozygous to heterozygous genotypes. ```vcf_2_gen_converter.pl``` will convert homozygous reference genotypes (0/0) to 'a' calls, and heterozygous genotypes (0/1) to 'A'. All homozygous alternate allele calls are converted to heterozygous genotypes, 'A'. Users can adjust the vcf2gen script to accomodate markers which segregate 1:1 for homozygous alternate allele and heterozygous genotypes. 
+phaseLD expects pseudo-oneway test cross populations, segregation ratios of 1:1 of homozygous to heterozygous genotypes. ```vcf2gen.pl``` will convert homozygous reference genotypes (0/0) to 'a' calls, and heterozygous genotypes (0/1) to 'A'. All homozygous alternate allele calls (1/1) are converted to heterozygous genotypes, 'A'. Users can adjust the vcf2gen script to accomodate markers which segregate 1:1 for homozygous alternate allele and heterozygous genotypes. 
 
 Convert VCF file to gen file format.
 ```
-perl vcf_2_gen_converter.pl file.vcf > file.gen
+perl vcf2gen.pl file.vcf > file.gen
 ```
 Example of gen file format:
 ```
@@ -53,9 +53,8 @@ Usage:
     phaseLD.pl --in <file.gen> [OPTIONS]
 
 Description:
-    Below you will find a list of parameter options. A complete list of 
-    parameter options. See 'https://github.com/plantformatics/phaseLD' for 
-    more information.
+    A complete list of parameter options. See 
+    'https://github.com/plantformatics/phaseLD' for more information.
 
   Input/Output:
     --in|-i             Genotype file [String|REQUIRED]
