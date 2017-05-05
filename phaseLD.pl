@@ -20,25 +20,29 @@ my $bwin = 50;
 my $bstep = 5;
 my $threads = 1;
 my $filt;
-my $r2_threshold = 0.25;
+my $rpen = 0.25;
+my $fast = '';
+my $quick = '';
 
 GetOptions(
         'in|i=s'        => \$gen,
         'out|o:s'       => \$out,
         'win|w:i'       => \$win,
         'step|s:i'      => \$step,
-	'rpen|r:i'	=> \$r2_threshold,
+	'rpen|r:f'	=> \$rpen,
 	'bwin|n:i'	=> \$bwin,
 	'bstep|t:i'	=> \$bstep,
+	'fast_mode|f'	=> \$fast,
+	'quick_mode|q'	=> \$quick,
 	'threads|p:i'	=> \$threads,
 	'filter|f:s'	=> \$filt,
-        'help|h!'         => \$help
-) or pod2usage(-verbose => 1) && exit;
+        'help|h!'       => \$help
+) or pod2usage(-verbose => 99) && exit;
 
-pod2usage(-verbose => 1) && exit if defined $help;
+pod2usage(-verbose => 99) && exit if defined $help;
 
 if(!$gen){
-        pod2usage(-verbose => 1) && exit;
+        pod2usage(-verbose => 99) && exit;
 }
 
 ####################################################
@@ -75,7 +79,7 @@ print STDERR "Running with $threads threads...\n";
 ##		  Phase Gentoypes 		  ##
 ####################################################
 
-open F, $gen or die;
+open F, $gen or die "Could not open file $gen\n";
 my @file = <F>;
 close F;
 
@@ -106,7 +110,9 @@ if($filt){
 	@file = @file1;
 }
 
-## phase genotypes
+print STDERR "R2 penalty set to $rpen...\n";
+
+## Output files
 my $out1 = $out . '.out';
 my $logs = $out . '.log';
 my $log_hap = $out . '.raw_haplotypes';
@@ -116,6 +122,7 @@ open (my $log, '>', $logs) or die;
 open (my $rawhap, '>', $log_hap) or die;
 open (my $bad, '>', $bad_log) or die;
 
+## Phase Genotypes
 my %hash;
 my %probs;
 my $check = 0;
@@ -129,7 +136,11 @@ for (my $i = 0; $i < @file; $i+=$step){
 		$end = @file;
 	}
 	my $current_marker_pass = 0;
+	my $bingo = 0;
+	my $its = 0;
+	my @good_array;
 	for (my $j = $i+1; $j < $end; $j++){
+		$its++;
 		chomp($file[$i]);
 		chomp($file[$j]);
 		my @pos1 = split("\t",$file[$i]);
@@ -144,11 +155,20 @@ for (my $i = 0; $i < @file; $i+=$step){
 		}
 		else{
 			my $r2 = $results[1];
+			if($r2 < $rpen){
+				next;
+			}
 			my %haps = %$linkage;
+			if($haps{AA} > 0.65 || $haps{aa} > 0.65 || $haps{Aa} > 0.65 || $haps{aA} > 0.65){
+				next;
+			}
+			$bingo++;
+			push(@good_array, $j);
 			my @keys = sort {$haps{$b} <=> $haps{$a}} keys %haps;
-			print $log "$id1\t$id2\t$r2";
+			print $log "$id1\t$id2\t$r2\tT_$rpen";
 			my $coupling = 0;
 			my $repulsion = 0;
+			my $freq = 0;
 			for (my $t = 0; $t < @keys; $t++){
 				if($keys[$t] eq 'AA' || $keys[$t] eq 'aa'){
 					$coupling = $coupling + $haps{$keys[$t]};
@@ -159,18 +179,7 @@ for (my $i = 0; $i < @file; $i+=$step){
 				print $log "\t$keys[$t]=$haps{$keys[$t]}";
 			}
 			print $log "\n";
-			if($r2 < $r2_threshold){
-				$current_marker_pass++;
-				if($current_marker_pass > $win/3){
-					print $bad "$id1\tconsistently_poor_r2\n";
-					last;
-				}
-				next;
-			}
-			elsif($r2 >= $r2_threshold){
-				$check++;
-			}
-			my $break1;
+			$check++;
 			if($check == 1){
 				if($coupling > $repulsion){
 					push(@{$hash{$id1}{0}},'A');
@@ -264,6 +273,16 @@ for (my $i = 0; $i < @file; $i+=$step){
 						push(@{$probs{$id2}},$repulsion);
 					}
 				}
+				if($quick){
+					if($bingo > 5 && $bingo > $win/10){
+						$i = $good_array[$#good_array]-1;
+						last;
+					}
+				}
+				if($fast){
+					$i = $j;
+					last;
+				}
 			}
 		}
 	}
@@ -290,10 +309,10 @@ for (my $t = 0; $t < @file; $t++){
 	}
 	my @prob = @{$probs{$id}};
 	my $ave = sprintf("%.3f",mean(@prob));
-	if($ave < 0.7){
-		print $bad "$id\tlow_hap_frequency\n";
-		next;
-	}
+#	if($ave < 0.65){
+#		print $bad "$id\tlow_hap_frequency\n";
+#		next;
+#	}
 	$ave_prob{$id} = $ave;
 	my $count_A = 0;
 	my $count_a = 0;
@@ -308,14 +327,14 @@ for (my $t = 0; $t < @file; $t++){
 	my $hap0 = $count_A + $count_a;
 	my $freq_A = $count_A / $hap0;
 	my $freq_a = $count_a / $hap0;
-	if($freq_A < 0.8 && $freq_a < 0.8){
-		print $bad "$id\tsite_freq_less_than_0.8\n";
-		next;
-	}
-	elsif($hap0 < $win/(3*$step)){
-		print $bad "$id\tlow_counts_corroboration\n";
-		next unless $hap0 == 1;
-	}
+#	if($freq_A < 0.8 && $freq_a < 0.8){
+#		print $bad "$id\tsite_freq_less_than_0.8\n";
+#		next;
+#	}
+#	elsif($hap0 < $win/(5*$step)){
+#		print $bad "$id\tlow_counts_corroboration\n";
+#		next unless $hap0 == 1;
+#	}
 	my $count_A1 = 0;
 	my $count_a1 = 0;
 	foreach(@{$hash{$id}{1}}){
@@ -441,12 +460,15 @@ sub bayes {
 			}
 		}
 		my $n_call = $ave_call/@snps;
-		my $total = $hap0 + $hap1 + $missing;
-		my $prob_0_r = (binomial($total,$hap0))*((1-$n_call)**$hap1)*($n_call**$hap0)*0.5;
-		my $prob_1_r = (binomial($total,$hap1))*($n_call**$hap1)*((1-$n_call)**$hap0)*0.5;
-		my $total_prob = $prob_0_r + $prob_1_r;
-		my $prob_0 = $prob_0_r/$total_prob;
-		my $prob_1 = $prob_1_r/$total_prob;
+		my $total = $hap0 + $hap1;
+		my $p0_bc = binomial($total,$hap1);
+		my $p1_bc = binomial($total,$hap0);
+		my $p0_top = $p0_bc * ((1-$n_call)**$hap1) * ($n_call**$hap0) * 0.5;
+		my $p1_top = $p1_bc * ((1-$n_call)**$hap0) * ($n_call**$hap1) * 0.5;
+		my $total_prob = $p0_top + $p1_top;
+#		print STDERR "E = $n_call h0 = $hap0 h1 = $hap1 p0_bc = $p0_bc p1_bc = $p1_bc p0 = $p0_top\tp1 = $p1_top\n";
+		my $prob_0 = $p0_top/$total_prob;
+		my $prob_1 = $p1_top/$total_prob;
 		$bcalls{$window_snps}{$indivs[$i]}{0} = sprintf("%.10f", $prob_0);
 		$bcalls{$window_snps}{$indivs[$i]}{1} = sprintf("%.10f", $prob_1);
 	}
@@ -530,11 +552,19 @@ F1 Diploid Genotype Phasing, Alexandre Marand & Hainan Zhao
 
 =head1 SYNOPSIS
 
-phaseLD.pl --in <foo.gen> [OPTIONS]
+phaseLD.pl --in <file.gen> [OPTIONS]
 
-=head1 OPTIONS
+=head1 DESCRIPTION
+
+Below you will find a list of parameter options. The defaults work well for clean data: low genotype missing rate, low genotype error rate, and high marker density (10,000-1,000,000). 
 
 =over 14
+
+=back
+
+=head2 Input/Output
+
+=over 20
 
 =item B<--in|-i>
 
@@ -544,6 +574,12 @@ Genotype file [String|REQUIRED]
 
 Prefix for output files [String|Default='phased']
 
+=back
+
+=head2 Performance 
+
+=over 20
+
 =item B<--win|-w>
 
 Set minimum window size for estimating LD [Int|Default=20]
@@ -551,10 +587,6 @@ Set minimum window size for estimating LD [Int|Default=20]
 =item B<--step|-s>
 
 Set minimum step size for LD calculations in a sliding window, defaults to 1 [Int|Default=1]
-
-=item B<--rpen|-r>
-
-Set minimum r2 value needed to retain SNPs. This threshold helps to remove false positive SNP call. Defaults to 0.25. [Int|Default=0.25]
 
 =item B<--bwin|-n>
 
@@ -564,13 +596,37 @@ Set minimum window size for bayes haplotype calling [Int|Default=50]
 
 Set minimum step size for bayes haplotype calling [Int|Default=5]
 
+=item B<--rpen|-r>
+
+Set minimum r2 value needed to retain SNPs. This threshold helps to remove false positive SNP call. Defaults to 0.25. [Int|Default=0.25]
+
+=back
+
+=head2 Run Time Options
+
+=over 20
+
 =item B<--threads|-p>
 
 Set number of threads [Int|Default=1]
 
+=item B<--fast_mode|-f>
+
+Instead of calculating LD for every marker in the window, calculate LD for window_size/10. The next position is the first marker above the R2 threshold. This makes the computation 10-20X faster for the default window size. Time saved increases exponentially as window sizes get larger. . 
+
+=item B<--quick_mode|-q>
+
+Rather than use pairwise LD calculations within a window, use LD chaining instead. Starting at marker X, the algorithm searches for the nearest marker, y, with R2 above the threshold. The next iteration starts at marker y and continues until all markers are exhausted. 
+
 =item B<--filter|-f>
 
 Optionally use file with suffix 'bad' generated by phaseLD to filter poor markers. 'prefix.bad' contains IDs of bad SNPs identified in the first pass. Useful to cleaning haplotype switch problems [String|Optional]
+
+=back
+
+=head2 Misc
+
+=over 20
 
 =item B<--help|-h>
 
