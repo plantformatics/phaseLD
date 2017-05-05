@@ -244,9 +244,11 @@ for (my $i = 0; $i < @file; $i+=$step){
 				print $log "\tskipped\n";
 				next;
 			}
-			elsif($haps{AA} > 0.7 || $haps{aa} > 0.7 || $haps{Aa} > 0.7 || $haps{aA} > 0.7){
-				print $log "\tskipped\n";
-				next;
+			elsif($haps{AA} > 0.75 || $haps{aa} > 0.75 || $haps{Aa} > 0.75 || $haps{aA} > 0.75){
+				if($r2 < 0.95){
+					print $log "\tskipped\n";
+					next;
+				}
 			}
 			elsif($dist1 > 0.8 || $dist2 > 0.8 || $dist3 > 0.8 || $dist4 > 0.8){
 				print $log "\tskipped\n";
@@ -391,7 +393,7 @@ for (my $i = 0; $i < @file; $i+=$step){
 						exit;
 					}
 					else{
-						if($bingo > 5 || $bingo > $win/10 && $its < $win){
+						if(($bingo > 10 && $win < 100) || ($bingo > $win/20 && $its < $win && $win > 100)){
 							$i = $good_array[0] - 1;
 							$bounce++;
 							last;
@@ -586,7 +588,7 @@ sub bayes {
 		}
 		my $n_call = $ave_call/@snps;
 		my $total = $hap0 + $hap1;
-		if($total < 10){
+		if($total < $win/10 || $total < 2){
 			$bcalls{$window_snps}{$indivs[$i]}{0} = 0.5000000000;
 	                $bcalls{$window_snps}{$indivs[$i]}{1} = 0.5000000000;
 			next;

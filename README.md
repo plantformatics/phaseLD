@@ -1,5 +1,5 @@
 # phaseLD
-Developed by Alexandre Marand & Hanain Zhao, 2017
+Alexandre Marand, 2017
 
 A simple LD based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian methods (within phaseLD.pl). Optionally, users can implement an HMM on the raw SNP haplotype calls, which models error and recombination rates between loci to infer the most probable haplotypes.
 
@@ -47,7 +47,7 @@ phaseLD will output 3 files, with the suffix '.out', '.log', '.raw_hap'. The '.o
 ## Usage
 ```
 Name:
-    F1 Diploid Genotype Phasing, Alexandre Marand & Hainan Zhao
+    phaseLD, F1 Diploid Genotype Phasing, Alexandre Marand 2017
 
 Usage:
     phaseLD.pl --in <file.gen> [OPTIONS]
