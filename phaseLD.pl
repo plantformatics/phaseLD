@@ -244,7 +244,7 @@ for (my $i = 0; $i < @file; $i+=$step){
 				print $log "\tskipped\n";
 				next;
 			}
-			if($haps{AA} > 0.7 || $haps{aa} > 0.7 || $haps{Aa} > 0.7 || $haps{aA} > 0.7){
+			elsif($haps{AA} > 0.7 || $haps{aa} > 0.7 || $haps{Aa} > 0.7 || $haps{aA} > 0.7){
 				print $log "\tskipped\n";
 				next;
 			}
@@ -263,6 +263,9 @@ for (my $i = 0; $i < @file; $i+=$step){
 			elsif($haps{$rev} < 0.15){
 				print $log "\tskipped\n";
 				next;
+			}
+			elsif($haps{$rev} + $haps{$best} < 0.75){
+				print $log "\tskipped\n";
 			}
 			else{
 				print $log "\tretained\n";
