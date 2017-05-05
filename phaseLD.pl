@@ -265,7 +265,9 @@ for (my $i = 0; $i < @file; $i+=$step){
 				next;
 			}
 			elsif($haps{$rev} + $haps{$best} < 0.75){
-				print $log "\tskipped\n";
+				if($rev ne $keys[1]){
+					print $log "\tskipped\n";
+				}
 			}
 			else{
 				print $log "\tretained\n";
@@ -680,7 +682,7 @@ phaseLD.pl --in <file.gen> [OPTIONS]
 
 =head1 DESCRIPTION
 
-Below you will find a list of parameter options. The defaults work well for clean data: low genotype missing rate, low genotype error rate, and high marker density (10,000-1,000,000). 
+A complete list of parameter options. See 'https://github.com/plantformatics/phaseLD' for more information. 
 
 =over 14
 

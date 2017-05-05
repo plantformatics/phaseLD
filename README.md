@@ -53,9 +53,9 @@ Usage:
     phaseLD.pl --in <file.gen> [OPTIONS]
 
 Description:
-    Below you will find a list of parameter options. The defaults work well
-    for clean data: low genotype missing rate, low genotype error rate, and
-    high marker density (10,000-1,000,000).
+    Below you will find a list of parameter options. A complete list of 
+    parameter options. See 'https://github.com/plantformatics/phaseLD' for 
+    more information.
 
   Input/Output:
     --in|-i             Genotype file [String|REQUIRED]
