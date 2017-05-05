@@ -19,6 +19,22 @@ Click [here] for link to cpanm.
 
 [here]: http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
 
+## Preparing Data
+Convert VCF file to gen file format
+```
+perl vcf_2_gen_converter.pl file.vcf > file.gen
+```
+Example of gen file format:
+chr01	1000	A	-	-	a	A	a	a	A
+chr01	1100	a	-	A	A	a	A	-	-
+chr01	1200	a	a	A	A	a	-	A	a
+
+Example of filter file format:
+chr01\_15879     
+chr01\_104598    
+chr01\_158589    
+chr01\_158620    
+
 ## Usage
 ```
 Name:

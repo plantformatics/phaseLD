@@ -192,7 +192,14 @@ for (my $i = 0; $i < @file; $i+=$step){
 				last;
 			}
 			else{
-				next;
+				my $try_again = $end + 2;
+				if(@file > $try_again){
+					$end = $try_again;
+					redo;
+				}
+				else{
+					next;
+				}
 			}
 		}
 		chomp($file[$i]);
