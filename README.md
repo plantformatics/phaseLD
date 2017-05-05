@@ -33,10 +33,10 @@ chr01	1200	a	a	A	A	a	-	A	a
 
 Example of filter file format:
 ```
-chr01\_15879     
-chr01\_104598    
-chr01\_158589    
-chr01\_158620    
+chr01_15879     
+chr01_104598    
+chr01_158589    
+chr01_158620    
 ```
 
 ## Usage
