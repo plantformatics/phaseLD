@@ -701,7 +701,7 @@ __END__
 
 =head1 NAME
 
-F1 Diploid Genotype Phasing, Alexandre Marand & Hainan Zhao
+phaseLD v.0.01, developed by Alexandre Marand & Hainan Zhao, 2017
 
 =head1 SYNOPSIS
 
