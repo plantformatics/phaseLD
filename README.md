@@ -47,7 +47,7 @@ phaseLD will output 3 files, with the suffix '.out', '.log', '.raw_hap'. The '.o
 ## Usage
 ```
 Name:
-    phaseLD, F1 Diploid Genotype Phasing, Alexandre Marand 2017
+    phaseLD v.0.01, developed by Alexandre Marand and Hainan Zhao, 2017
 
 Usage:
     phaseLD.pl --in <file.gen> [OPTIONS]
