@@ -168,6 +168,7 @@ my %hash;
 my %probs;
 my $check = 0;
 my $time2 = ts();
+my %skipped;
 print STDERR "$time2\t...Calculating LD...\n";
 for (my $i = 0; $i < @file; $i+=$step){
 	my $end;
@@ -212,6 +213,8 @@ for (my $i = 0; $i < @file; $i+=$step){
 		my $linkage = $results[0];
 		if($linkage eq 'NA'){
 			print $log "$its...$id1\t$id2\tNA\n";
+			$skipped{$id1}++;
+			$skipped{$id2}++;
 			next;
 		}
 		else{
@@ -242,16 +245,22 @@ for (my $i = 0; $i < @file; $i+=$step){
                         }
 			if($r2 < $rpen){
 				print $log "\tskipped\n";
+				$skipped{$id1}++;
+				$skipped{$id2}++;
 				next;
 			}
 			elsif($haps{AA} > 0.75 || $haps{aa} > 0.75 || $haps{Aa} > 0.75 || $haps{aA} > 0.75){
 				if($r2 < 0.95){
 					print $log "\tskipped\n";
+					$skipped{$id1}++;
+					$skipped{$id2}++;
 					next;
 				}
 			}
 			elsif($dist1 > 0.8 || $dist2 > 0.8 || $dist3 > 0.8 || $dist4 > 0.8){
 				print $log "\tskipped\n";
+				$skipped{$id1}++;
+				$skipped{$id2}++;
 				next;
 			}
 			my $best = $keys[0];
@@ -260,15 +269,21 @@ for (my $i = 0; $i < @file; $i+=$step){
 			my $dif = $haps{$best} - $haps{$rev};
 			if($dif > 0.5){
 				print $log "\tskipped\n";
+				$skipped{$id1}++;
+				$skipped{$id2}++;
 				next;
 			}
 			elsif($haps{$rev} < 0.15){
 				print $log "\tskipped\n";
+				$skipped{$id1}++;
+				$skipped{$id2}++;
 				next;
 			}
-			elsif($haps{$rev} + $haps{$best} < 0.6){
+			elsif($haps{$rev} + $haps{$best} < 0.8){
 				if($rev ne $keys[1]){
 					print $log "\tskipped\n";
+					$skipped{$id1}++;
+					$skipped{$id2}++;
 					next;
 				}
 				else{
@@ -588,7 +603,7 @@ sub bayes {
 		}
 		my $n_call = $ave_call/@snps;
 		my $total = $hap0 + $hap1;
-		if($total < $win/10 || $total < 2){
+		if($total < 5){
 			$bcalls{$window_snps}{$indivs[$i]}{0} = 0.5000000000;
 	                $bcalls{$window_snps}{$indivs[$i]}{1} = 0.5000000000;
 			next;
