@@ -1,7 +1,7 @@
 # phaseLD
 Alexandre Marand & Hainan Zhao, 2017
 
-A simple LD based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian methods (within phaseLD.pl). Optionally, users can implement an HMM on the raw SNP haplotype calls, which models error and recombination rates between loci to infer the most probable haplotypes.
+A simple LD based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian inference. 
 
 Please cite "" if you use this software.  
 
