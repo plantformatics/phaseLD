@@ -42,7 +42,7 @@ chr01_158620
 ```
 
 ## Output
-phaseLD will output 3 files, with the suffix '.out', '.log', '.raw_hap'. The '.out' file contains the probabilities of both haplotypes for each individual in a given window. The '.log' file contains all the information from the LD calculations. The '.raw_hap' file contains the non-window haplotype, with the normalized probability of the correct phase assignment. 
+phaseLD will output 3 files, with the suffix '.bayes', '.log', '.raw_hap'. The '.bayes' file contains the probabilities of both haplotypes for each individual in a given window. The '.log' file contains all the information from the LD calculations. The '.raw_hap' file contains the non-window haplotype, with the normalized probability of the correct phase assignment. 
 
 ## Usage
 ```

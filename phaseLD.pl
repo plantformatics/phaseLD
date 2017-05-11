@@ -151,7 +151,7 @@ if($filt){
 }
 
 ## Output files
-my $out1 = $out . '.out';
+my $out1 = $out . '.bayes';
 my $logs = $out . '.log';
 my $log_hap = $out . '.raw_hap';
 #my $bad_log = $out . '.bad';
