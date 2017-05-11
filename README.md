@@ -15,7 +15,7 @@ phaseLD.pl requires users to have the following perl modules available to @INC:
 
 All modules are available from CPAN, and can be accessed with cpan/cpanm.
 
-Click [here] for link to cpanm.
+Click [here] for a link to cpanm.
 
 [here]: http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
 
@@ -72,7 +72,7 @@ Description:
                         current iteration. Markers which are not linked with
                         neighboring markers are typically false positives.
                         See prefix.log to identify markers with low linkage.
-                        [Int|Default=20]
+                        [Int|Default=100]
 
     --step|-s           Set minimum step size for LD calculations in a
                         sliding window, defaults to 1. [Int|Default=1]

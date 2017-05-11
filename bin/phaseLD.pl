@@ -14,7 +14,7 @@ use Parallel::ForkManager;
 my $gen;
 my $out = 'phased';
 my $help;
-my $win = 20;
+my $win = 100;
 my $step = 1;
 my $bwin = 50;
 my $bstep = 5;
@@ -735,7 +735,7 @@ Prefix for output files [String|Default='phased']
 
 =item B<--win|-w>
 
-Set minimum window size for estimating Pairwise LD (when --quick_mode or --fast_mode are False). If --quick_mode or --fast_mode are enabled, this distance becomes the search area for linked markers. Windows are dynamically extended if no markers within the specified window are in linkage with the current iteration. Markers which are not linked with neighboring markers are typically false positives. See prefix.log to identify markers with low linkage. [Int|Default=20]
+Set minimum window size for estimating Pairwise LD (when --quick_mode or --fast_mode are False). If --quick_mode or --fast_mode are enabled, this distance becomes the search area for linked markers. Windows are dynamically extended if no markers within the specified window are in linkage with the current iteration. Markers which are not linked with neighboring markers are typically false positives. See prefix.log to identify markers with low linkage. [Int|Default=100]
 
 =item B<--step|-s>
 
