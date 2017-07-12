@@ -1,5 +1,5 @@
 # phaseLD
-Alexandre Marand & Hainan Zhao, 2017
+Alexandre Marand, 2017
 
 A simple LD based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian inference. 
 
@@ -48,7 +48,7 @@ phaseLD will output 3 files, with the suffix '.bayes', '.log', '.raw_hap'. The '
 ## Usage
 ```
 Name:
-    phaseLD v.0.01, developed by Alexandre Marand and Hainan Zhao, 2017
+    phaseLD v.0.01, developed by Alexandre Marand, 2017
 
 Usage:
     phaseLD.pl --in <file.gen> [OPTIONS]
