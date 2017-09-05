@@ -19,6 +19,9 @@ Click [here] for a link to cpanm.
 
 [here]: http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
 
+## Installation
+After installing dependencies, simply add /path/to/phaseLD/bin to your PATH in .bashrc or .zshrc
+
 ## Preparing Data
 phaseLD expects pseudo-oneway test cross populations, segregation ratios of 1:1 of homozygous to heterozygous genotypes. ```vcf2gen.pl```, which is included in the directory ```bin```, will convert homozygous reference genotypes (0/0) to 'a' calls, and heterozygous genotypes (0/1) to 'A'. All homozygous alternate allele calls (1/1) are converted to heterozygous genotypes, 'A'. Users can adjust the vcf2gen script to accomodate markers which segregate 1:1 for homozygous alternate alleles (1/1) and heterozygous genotypes (0/1). 
 
