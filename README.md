@@ -5,7 +5,7 @@ A simple LD based method to quickly phase pseudo-oneway test cross populations b
 
 Please cite if you use this software:
 
-Marand et al. "Meiotic crossovers are associated with open chromatin and enriched with Stowaway transposons in potato" *Genome Biology* (2017)
+Marand et al. (2017). "Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."*Genome Biology*
 
 Click [here] for a link to the paper.   
 
