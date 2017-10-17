@@ -9,7 +9,7 @@ Alexandre P. Marand, Shelley H. Jansky, Hainan Zhao, Courtney P. Leisner, Xiaobi
 
 ["Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."]: https://genomebiology.biomedcentral.com
 
-## Dependencies
+## Dependencies phaseLD.pl
 phaseLD.pl requires users to have the following perl modules available to @INC:
 
 1) [Sort::Naturally](http://search.cpan.org/~bingos/Sort-Naturally-1.03/lib/Sort/Naturally.pm)
@@ -22,6 +22,15 @@ All modules are available from CPAN, and can be accessed with cpan/cpanm.
 Click [here] for a link to cpanm.
 
 [here]: http://search.cpan.org/~miyagawa/Menlo-1.9004/script/cpanm-menlo
+
+## Dependencies extract_crossovers.pl
+
+extract_crossovers.pl additionally requires the moduels:
+
+1) [PDL]
+2) [PDL::Stats]
+
+All modules are available from CPAN, and can be accessed with cpan/cpanm.
 
 ## Installation
 After installing dependencies, simply add ```PATH=$PATH:/path/to/phaseLD/bin``` to your PATH in .bashrc or .zshrc.
