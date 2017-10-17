@@ -27,8 +27,8 @@ Click [here] for a link to cpanm.
 
 extract_crossovers.pl additionally requires the moduels:
 
-1) [PDL]
-2) [PDL::Stats]
+1) [PDL](http://search.cpan.org/~chm/PDL-2.018/Basic/PDL.pm)
+2) [PDL::Stats](http://search.cpan.org/~maggiexyz/PDL-Stats-0.6.5/Stats.pm)
 
 All modules are available from CPAN, and can be accessed with cpan/cpanm.
 
