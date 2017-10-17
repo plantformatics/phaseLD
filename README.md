@@ -132,8 +132,8 @@ Description:
 ```
 
 
-## extract_crossovers.pl
+## Usage extract_crossovers.pl
 
 ```
-extract_crossovers.pl file.bayes file.raw.hap > file.crossover.intervals
+extract_crossovers.pl foo.bayes foo.raw_hap > foo.crossoverintervals
 ```
