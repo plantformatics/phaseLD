@@ -130,3 +130,10 @@ Description:
   Misc:
     --help|-h           Print a brief help message and exit.
 ```
+
+
+## extract_crossovers.pl
+
+```
+extract_crossovers.pl file.bayes file.raw.hap > file.crossover.intervals
+```
