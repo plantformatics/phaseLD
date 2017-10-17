@@ -1,7 +1,7 @@
 # phaseLD
 Alexandre Marand, 2017
 
-A simple LD based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian inference. 
+A simple LD-based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian inference. 
 
 ## Citation
 
