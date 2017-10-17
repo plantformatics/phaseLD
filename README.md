@@ -3,12 +3,11 @@ Alexandre Marand, 2017
 
 A simple LD based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian inference. 
 
-Please cite the following article if you use this software. Click [here] for a link to the paper.  
+Please cite the following article if you use this software. 
 
-[here]: https://genomebiology.biomedcentral.com
+Alexandre P. Marand, Shelley H. Jansky, Hainan Zhao, Courtney P. Leisner, Xiaobiao Zhu, Zixian Zeng, Emily Crisovan, Linsey Newton, Andy J. Hamernik, Richard E. Veilleux, C. Robin Buell, Jiming Jiang. (2017). ["Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."] *Genome Biology*
 
-Marand et al. (2017). "Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato." *Genome Biology*
-
+["Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."]: https://genomebiology.biomedcentral.com
 
 ## Dependencies
 phaseLD.pl requires users to have the following perl modules available to @INC:
