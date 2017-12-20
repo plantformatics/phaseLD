@@ -7,7 +7,7 @@ A simple LD-based method to quickly phase pseudo-oneway test cross populations b
 
 Alexandre P. Marand, Shelley H. Jansky, Hainan Zhao, Courtney P. Leisner, Xiaobiao Zhu, Zixian Zeng, Emily Crisovan, Linsey Newton, Andy J. Hamernik, Richard E. Veilleux, C. Robin Buell, Jiming Jiang. (2017). ["Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."] *Genome Biology*
 
-["Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."]: https://genomebiology.biomedcentral.com
+["Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."]: https://genomebiology.biomedcentral.com/articles/10.1186/s13059-017-1326-8
 
 ## Dependencies phaseLD.pl
 phaseLD.pl requires users to have the following perl modules available to @INC:
