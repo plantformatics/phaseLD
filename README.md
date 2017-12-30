@@ -1,7 +1,7 @@
 # phaseLD
 Alexandre Marand, 2017
 
-A simple LD-based method to quickly phase pseudo-oneway test cross populations by identifying window haplotypes via Bayesian inference. 
+A simple LD-based method to quickly phase pseudo-oneway test cross populations by identifying window-based haplotypes via Bayesian inference. 
 
 ## Citation
 
@@ -36,7 +36,7 @@ All modules are available from CPAN, and can be accessed with cpan/cpanm.
 After installing dependencies, simply add ```PATH=$PATH:/path/to/phaseLD/bin``` to your PATH in .bashrc or .zshrc.
 
 ## Preparing Data
-phaseLD expects pseudo-oneway test cross populations, segregation ratios of 1:1 of homozygous to heterozygous genotypes. ```vcf2gen.pl```, which is included in the directory ```bin```, will convert homozygous reference genotypes (0/0) to 'a' calls, and heterozygous genotypes (0/1) to 'A'. All homozygous alternate allele calls (1/1) are converted to heterozygous genotypes, 'A'. Users can adjust the vcf2gen script to accomodate markers which segregate 1:1 for homozygous alternate alleles (1/1) and heterozygous genotypes (0/1). 
+phaseLD expects pseudo-oneway test cross populations, theoretical segregation ratios of ~1:1 of homozygous to heterozygous genotypes. ```vcf2gen.pl```, which is included in the directory ```bin```, will convert homozygous reference genotypes (0/0) to 'a' calls, and heterozygous genotypes (0/1) to 'A'. All homozygous alternate allele calls (1/1) are converted to heterozygous genotypes, 'A'. Users can adjust the vcf2gen script to accomodate markers which segregate 1:1 for homozygous alternate alleles (1/1) and heterozygous genotypes (0/1). 
 
 Convert VCF file to gen file format.
 ```
