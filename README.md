@@ -64,21 +64,30 @@ phaseLD will output 3 files, with the suffix '.bayes', '.log', '.raw_hap'. The '
 ## Usage
 ```
 Name:
+
     phaseLD v.0.01, developed by Alexandre Marand, 2017
 
+
 Usage:
+
     phaseLD.pl --in <file.gen> [OPTIONS]
 
+
 Description:
+
     A complete list of parameter options. See 
     'https://github.com/plantformatics/phaseLD' for more information.
 
+
   Input/Output:
+  
     --in|-i             Genotype file [String|REQUIRED]
 
     --out|-o            Prefix for output files [String|Default='phased']
 
+
   Performance:
+  
     --win|-w            Set minimum window size for estimating Pairwise LD
                         (when --quick_mode or --fast_mode are False). If
                         --quick_mode or --fast_mode are enabled, this
@@ -103,7 +112,9 @@ Description:
                         threshold helps to remove false positive SNP calls.
                         Defaults to 0.25. [Int|Default=0.25]
 
+
   Run Time Options:
+  
     --threads|-p        Set number of threads. [Int|Default=1]
 
     --quick_mode|-f     Instead of calculating LD for every marker in the
@@ -127,8 +138,12 @@ Description:
                         Useful to cleaning haplotype switch problems or
                         thinning data to specific markers. [String|Optional]
 
+
   Misc:
+  
     --help|-h           Print a brief help message and exit.
+    
+    
 ```
 
 
