@@ -93,14 +93,14 @@ Description:
     --step|-s           Set minimum step size for LD calculations in a
                         sliding window, defaults to 1. [Int|Default=1]
 
-    --bwin|-n           Set minimum window size for bayes haplotype calling.
+    --bwin|-n           Set minimum window size for bayesian haplotype calling.
                         [Int|Default=50]
 
-    --bstep|-t          Set minimum step size for bayes haplotype calling.
+    --bstep|-t          Set minimum step size for bayesian haplotype calling.
                         [Int|Default=5]
 
     --rpen|-r           Set minimum r2 value needed to retain SNPs. This
-                        threshold helps to remove false positive SNP call.
+                        threshold helps to remove false positive SNP calls.
                         Defaults to 0.25. [Int|Default=0.25]
 
   Run Time Options:
@@ -112,14 +112,14 @@ Description:
                         This makes the computation 10-20X faster for the
                         default window size. Time saved increases
                         exponentially as window sizes get larger.
-                        [Boolean|Default=False]
+                        [Flag]
 
     --fast_mode|-q      Rather than use pairwise LD calculations within a
                         window, use LD chaining instead. Starting at marker
                         X, the algorithm searches for the nearest marker, y,
                         with R2 above the threshold. The next iteration
                         starts at marker y and continues until all markers
-                        are exhausted. [Boolean|Default=False]
+                        are exhausted. [Flag]
 
     --filter|-f         Optionally use a file to mask markers. This file
                         should contain the chromosome and position of the
