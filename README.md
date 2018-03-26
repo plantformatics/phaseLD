@@ -10,7 +10,7 @@ Alexandre P. Marand, Shelley H. Jansky, Hainan Zhao, Courtney P. Leisner, Xiaobi
 ["Meiotic crossovers are associated with open chromatin and enriched with *Stowaway* transposons in potato."]: https://genomebiology.biomedcentral.com/articles/10.1186/s13059-017-1326-8
 
 ## Dependencies phaseLD.pl
-phaseLD.pl requires users to have the following perl modules available to @INC:
+```phaseLD.pl``` requires users to have the following perl modules available to @INC:
 
 1) [Sort::Naturally](http://search.cpan.org/~bingos/Sort-Naturally-1.03/lib/Sort/Naturally.pm)
 2) [Pod::Usage](http://search.cpan.org/~marekr/Pod-Usage-1.69/lib/Pod/Usage.pm)
@@ -25,7 +25,7 @@ Click [here] for a link to cpanm.
 
 ## Dependencies extract_crossovers.pl
 
-extract_crossovers.pl additionally requires the moduels:
+```extract_crossovers.pl``` additionally requires the moduels:
 
 1) [PDL](http://search.cpan.org/~chm/PDL-2.018/Basic/PDL.pm)
 2) [PDL::Stats](http://search.cpan.org/~maggiexyz/PDL-Stats-0.6.5/Stats.pm)
@@ -58,7 +58,7 @@ chr01_158589
 chr01_158620    
 ```
 
-**IMPORTANT NOTE**: only run phaseLD.pl on **single** chromosome at a time, otherwise the algorithm will be extremely slow as it saves a fair amount of information in memory. Running on more than one chromosome will also result in the haplotyping window to consider windows spanning multiple chromosomes as it assumes only a single chromosome at a time. 
+**IMPORTANT NOTE**: only run ```phaseLD.pl``` on **single** chromosome at a time, otherwise the algorithm will be extremely slow as it saves a fair amount of information in memory. Running on more than one chromosome will also result in the haplotyping window to consider windows spanning multiple chromosomes as it assumes only a single chromosome at a time. 
 
 
 ## Output
