@@ -58,7 +58,7 @@ chr01_158589
 chr01_158620    
 ```
 
-IMPORTANT NOTE: only run phaseLD.pl on single chromosome at a time, otherwise the algorithm will be extremely slow as it saves a fair amount of information in memory. Running on more than one chromosome will also result in the haplotyping window to consider windows spanning multiple chromosomes as it assumes only a single chromosome at a time. 
+**IMPORTANT NOTE**: only run phaseLD.pl on **single** chromosome at a time, otherwise the algorithm will be extremely slow as it saves a fair amount of information in memory. Running on more than one chromosome will also result in the haplotyping window to consider windows spanning multiple chromosomes as it assumes only a single chromosome at a time. 
 
 
 ## Output
