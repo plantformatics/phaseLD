@@ -156,7 +156,7 @@ Description:
 extract_crossovers.pl foo.bayes foo.raw_hap > foo.crossoverintervals
 ```
 
-### column information
+### Output header information
 Column 1 = chromosome
 
 Column 2 = start
