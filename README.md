@@ -155,3 +155,18 @@ Description:
 ```
 extract_crossovers.pl foo.bayes foo.raw_hap > foo.crossoverintervals
 ```
+
+### column information
+Column 1 = chromosome
+
+Column 2 = start
+
+Column 3 = end
+
+Column 4 = haplotype transition
+
+Column 5 = crossover probability
+
+Column 6 = progeny index
+
+Column 7 = crossover interval length (bp)
